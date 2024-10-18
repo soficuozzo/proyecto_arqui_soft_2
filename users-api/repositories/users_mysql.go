@@ -2,8 +2,10 @@ package repositories
 
 import (
 	"github.com/jinzhu/gorm"
-	//"github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	log "github.com/sirupsen/logrus"
+
+	"proyecto_arqui_soft_2/users-api/dao"
 )
 
 var (
@@ -13,10 +15,10 @@ var (
 
 func init() {
 	// DB Connections Paramters
-	DBName := "users" //Nombre de la base de datos local de ustedes
-	DBUser := "root"          //usuario de la base de datos, habitualmente root
-	DBPass := "root"              //password del root en la instalacion
-	DBHost := "127.0.0.1"         //host de la base de datos. hbitualmente 127.0.0.1
+	DBName := "users"     //Nombre de la base de datos local de ustedes
+	DBUser := "root"      //usuario de la base de datos, habitualmente root
+	DBPass := "root"      //password del root en la instalacion
+	DBHost := "127.0.0.1" //host de la base de datos. hbitualmente 127.0.0.1
 	// ------------------------
 
 	// abrimos la base de datos
@@ -31,11 +33,11 @@ func init() {
 
 	// We need to add all CLients that we build
 
-
 }
 
 func StartDbEngine() {
 	// We need to migrate all classes model.
+	db.AutoMigrate(&dao.Usuario{})
 
 	log.Info("Finishing Migration Database Tables")
 }
