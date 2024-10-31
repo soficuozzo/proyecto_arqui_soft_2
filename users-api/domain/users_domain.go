@@ -1,7 +1,7 @@
 package domain
 
 type UsuarioData struct {
-	UsuarioID    int64    `json:"usuario_id"`
+	UsuarioID    int64  `json:"usuario_id"`
 	Nombre       string `json:"nombre"`
 	Apellido     string `json:"apellido"`
 	Tipo         string `json:"tipo"`
@@ -17,8 +17,7 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	Token     string `json:"token"`
-	
+	Token string `json:"token"`
 }
 
 type Resultado struct {
