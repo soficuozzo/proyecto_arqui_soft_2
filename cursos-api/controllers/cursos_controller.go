@@ -1,99 +1,108 @@
 package controllers
 
 import (
-    "net/http"
-    "strconv"
-    "proyecto_arqui_soft_2/cursos-api/domain"
-    "proyecto_arqui_soft_2/cursos-api/services"
-    "github.com/gin-gonic/gin"
-    "go.mongodb.org/mongo-driver/mongo"
+	"context"
+	"fmt"
+	"net/http"
+	"strings"
+	"github.com/gin-gonic/gin"
+	"proyecto_arqui_soft_2/cursos-api/domain"
 )
 
 
-func CrearCurso(c *gin.Context) {
-    var nuevoCurso domain.CursoData
-    if err := c.ShouldBindJSON(&nuevoCurso); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-
-    if err := services.CrearCurso(nuevoCurso); err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
-
-    c.JSON(http.StatusOK, gin.H{"message": "Curso creado exitosamente"})
-}
-func GetCursoById(c *gin.Context) {
-    cursoID, err := strconv.ParseInt(c.Param("id"), 10, 64)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
-        return
-    }
-
-    curso, err := services.GetCursoByID(cursoID)
-    if err != nil {
-        if err == mongo.ErrNoDocuments {
-            c.JSON(http.StatusNotFound, gin.H{"error": "Curso no encontrado"})
-        } else {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        }
-        return
-    }
-
-    c.JSON(http.StatusOK, curso)
+type Service interface {
+	GetCursoByID(ctx context.Context, id string) (domain.CursoData, error)
+	Create(ctx context.Context, curso domain.CursoData) (string, error)
+	Update(ctx context.Context, curso domain.CursoData) error
+	Delete(ctx context.Context, id string) error
 }
 
 
-func GetCursos(c *gin.Context) {
-    cursos, err := services.GetAllCursos()
-    if err != nil || len(cursos) == 0 {
-        c.JSON(http.StatusNotFound, gin.H{"error": "No hay cursos disponibles"})
-        return
-    }
-
-    c.JSON(http.StatusOK, cursos)
+type CursoController struct {
+	service Service
 }
 
-func DeleteCourseName(c *gin.Context) {
-    var json struct {
-        Nombre string `json:"nombre" binding:"required"`
-    }
 
-    if err := c.ShouldBindJSON(&json); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-
-    if err := services.DeleteCursoByName(json.Nombre); err != nil {
-        if err == mongo.ErrNoDocuments {
-            c.JSON(http.StatusNotFound, gin.H{"error": "Curso no encontrado"})
-        } else {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        }
-        return
-    }
-
-    c.JSON(http.StatusOK, gin.H{"message": "Curso eliminado"})
+func NewCursoController(service Service) CursoController {
+	return CursoController{
+		service: service,
+	}
 }
 
-func EditCourse(c *gin.Context) {
-    cursoID, err := strconv.ParseInt(c.Param("id"), 10, 64)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
-        return
-    }
 
-    var updateData map[string]interface{}
-    if err := c.ShouldBindJSON(&updateData); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
+func (controller CursoController) GetCursoByID(ctx *gin.Context) {
+	cursoID := strings.TrimSpace(ctx.Param("id"))
 
-    if err := services.UpdateCurso(cursoID, updateData); err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	curso, err := controller.service.GetCursoByID(ctx.Request.Context(), cursoID)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"error": fmt.Sprintf("error obteniendo curso: %s", err.Error()),
+		})
+		return
+	}
 
-    c.JSON(http.StatusOK, gin.H{"message": "Curso actualizado exitosamente"})
+	ctx.JSON(http.StatusOK, curso)
+}
+
+
+func (controller CursoController) Create(ctx *gin.Context) {
+
+	var curso domain.CursoData
+	if err := ctx.ShouldBindJSON(&curso); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("solicitud inválida: %s", err.Error()),
+		})
+		return
+	}
+
+	id, err := controller.service.Create(ctx.Request.Context(), curso)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": fmt.Sprintf("error creando curso: %s", err.Error()),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{
+		"id": id,
+	})
+}
+
+
+func (controller CursoController) Update(ctx *gin.Context) {
+
+	id := strings.TrimSpace(ctx.Param("id"))
+
+	var curso domain.CursoData
+	if err := ctx.ShouldBindJSON(&curso); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("solicitud inválida: %s", err.Error()),
+		})
+		return
+	}
+
+	curso.CursoID = id
+
+	if err := controller.service.Update(ctx.Request.Context(), curso); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": fmt.Sprintf("error actualizando curso: %s", err.Error()),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Curso actualizado",
+	})
+}
+
+func (controller CursoController) Delete(ctx *gin.Context) {
+	id := strings.TrimSpace(ctx.Param("id"))
+	if err := controller.service.Delete(ctx.Request.Context(), id); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": fmt.Sprintf("error eliminando curso: %s", err.Error()),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Curso eliminado",
+	})
 }

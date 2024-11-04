@@ -1,7 +1,7 @@
 package domain
 
 type CursoData struct {
-    CursoID     int64  `json:"curso_id"`
+    CursoID     string `json:"curso_id"`
     Nombre      string `json:"nombre"`
     Descripcion string `json:"descripcion"`
     CategoriaID int64  `json:"categoria_id"`

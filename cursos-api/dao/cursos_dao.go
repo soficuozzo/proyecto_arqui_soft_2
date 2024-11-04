@@ -1,6 +1,6 @@
 package dao
 type Curso struct {
-    CursoID     int64  `bson:"curso_id"`
+    CursoID     string  `bson:"curso_id"`
     Nombre      string `bson:"nombre"`
     Descripcion string `bson:"descripcion"`
     CategoriaID int64  `bson:"categoria_id"`

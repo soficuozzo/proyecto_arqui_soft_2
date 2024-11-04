@@ -69,7 +69,7 @@ func (repository Mongo) GetCursoByID(ctx context.Context, id string) (cursosDAO.
     return curso, nil
 }
 
-func (repository Mongo) CreateCurso(ctx context.Context, curso cursosDAO.Curso) (string, error) {
+func (repository Mongo) Create(ctx context.Context, curso cursosDAO.Curso) (string, error) {
     result, err := repository.client.Database(repository.database).Collection(repository.collection).InsertOne(ctx, curso)
     if err != nil {
         return "", fmt.Errorf("error creating document: %w", err)
@@ -82,7 +82,7 @@ func (repository Mongo) CreateCurso(ctx context.Context, curso cursosDAO.Curso) 
     return objectID.Hex(), nil
 }
 
-func (repository Mongo) UpdateCurso(ctx context.Context, cursoID string, updateData bson.M) error {
+func (repository Mongo) Update(ctx context.Context, cursoID string, updateData bson.M) error {
     objectID, err := primitive.ObjectIDFromHex(cursoID)
     if err != nil {
         return fmt.Errorf("error converting id to mongo ID: %w", err)
@@ -104,7 +104,7 @@ func (repository Mongo) UpdateCurso(ctx context.Context, cursoID string, updateD
     return nil
 }
 
-func (repository Mongo) DeleteCurso(ctx context.Context, id string) error {
+func (repository Mongo) Delete(ctx context.Context, id string) error {
     objectID, err := primitive.ObjectIDFromHex(id)
     if err != nil {
         return fmt.Errorf("error converting id to mongo ID: %w", err)
@@ -121,10 +121,12 @@ func (repository Mongo) DeleteCurso(ctx context.Context, id string) error {
 
     return nil
 }
+
+
 func (repository Mongo) TestConnection(ctx context.Context) error {
     if err := repository.client.Ping(ctx, nil); err != nil {
-        return fmt.Errorf("error pinging MongoDB: %w", err)
+        return fmt.Errorf("error al hacer ping a MongoDB: %w", err)
     }
-    fmt.Println("Connected to MongoDB successfully!")
     return nil
 }
+

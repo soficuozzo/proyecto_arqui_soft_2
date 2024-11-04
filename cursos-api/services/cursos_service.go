@@ -2,129 +2,91 @@ package services
 
 import (
     "context"
+    "fmt"
+    "go.mongodb.org/mongo-driver/bson" // Asegúrate de importar el paquete bson
     "proyecto_arqui_soft_2/cursos-api/dao"
     "proyecto_arqui_soft_2/cursos-api/domain"
-    "proyecto_arqui_soft_2/cursos-api/clients"
-    "time"
-    "go.mongodb.org/mongo-driver/bson"
 )
 
-func ToCursoDAO(curso domain.CursoData) dao.Curso {
-    return dao.Curso{
-        CursoID:     curso.CursoID,
-        Nombre:      curso.Nombre,
-        Descripcion: curso.Descripcion,
-        CategoriaID: curso.CategoriaID,
-        Capacidad:   curso.Capacidad,
+type Repository interface {
+    GetCursoByID(ctx context.Context, id string) (dao.Curso, error)
+    Create(ctx context.Context, curso dao.Curso) (string, error)
+    Update(ctx context.Context, id string, updateData bson.M) error // Cambiado a bson.M
+    Delete(ctx context.Context, id string) error
+}
+
+type CursoService struct {
+    mainRepository Repository
+}
+
+func NewCursoService(mainRepository Repository) CursoService {
+    return CursoService{
+        mainRepository: mainRepository,
     }
 }
 
-func ToDomainCurso(curso dao.Curso) domain.CursoData {
+func (service CursoService) GetCursoByID(ctx context.Context, id string) (domain.CursoData, error) {
+    cursoDAO, err := service.mainRepository.GetCursoByID(ctx, id)
+    if err != nil {
+        return domain.CursoData{}, fmt.Errorf("error obteniendo curso: %w", err)
+    }
+
     return domain.CursoData{
-        CursoID:     curso.CursoID,
+        CursoID:     cursoDAO.CursoID,
+        Nombre:      cursoDAO.Nombre,
+        Descripcion: cursoDAO.Descripcion,
+        CategoriaID: cursoDAO.CategoriaID,
+        Capacidad:   cursoDAO.Capacidad,
+    }, nil
+}
+
+func (service CursoService) Create(ctx context.Context, curso domain.CursoData) (string, error) {
+    cursoDAO := dao.Curso{
         Nombre:      curso.Nombre,
         Descripcion: curso.Descripcion,
         CategoriaID: curso.CategoriaID,
         Capacidad:   curso.Capacidad,
     }
+
+    id, err := service.mainRepository.Create(ctx, cursoDAO)
+    if err != nil {
+        return "", fmt.Errorf("error creando curso: %w", err)
+    }
+
+    return id, nil
 }
 
-func CrearCurso(curso domain.CursoData) error {
-    collection := GetCursoCollection() 
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-    defer cancel()
+func (service CursoService) Update(ctx context.Context, curso domain.CursoData) error {
+    updateData := bson.M{} 
+    if curso.Nombre != "" {
+        updateData["nombre"] = curso.Nombre
+    }
+    if curso.Descripcion != "" {
+        updateData["descripcion"] = curso.Descripcion
+    }
+    if curso.CategoriaID != 0 {
+        updateData["categoria_id"] = curso.CategoriaID
+    }
+    if curso.Capacidad != 0 {
+        updateData["capacidad"] = curso.Capacidad
+    }
 
-    cursoDAO := ToCursoDAO(curso)  // Convierte la estructura a la versión de Mongo
-    _, err := collection.InsertOne(ctx, cursoDAO)
+    if len(updateData) == 0 {
+        return fmt.Errorf("no hay campos para actualizar")
+    }
+
+    err := service.mainRepository.Update(ctx, curso.CursoID, updateData) // Se queda igual
     if err != nil {
-        return err
-    }
-
-/*     // Notificar a RabbitMQ
-    err = clients.PublishCursoCreado(cursoDAO)
-    if err != nil {
-        return err
-    } */
-
-    return nil
-}
-
-func GetCursoByID(cursoID int64) (domain.CursoData, error) {
-    var cursoDAO dao.Curso
-    collection := GetCursoCollection()
-
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-    defer cancel()
-
-    err := collection.FindOne(ctx, bson.M{"curso_id": cursoID}).Decode(&cursoDAO)
-    if err != nil {
-        return domain.CursoData{}, err
-    }
-
-    return ToDomainCurso(cursoDAO), nil  
-}
-
-
-func GetAllCursos() ([]domain.CursoData, error) {
-    var cursosDAO []dao.Curso
-    collection := GetCursoCollection()
-
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-    defer cancel()
-
-    cursor, err := collection.Find(ctx, bson.M{})
-    if err != nil {
-        return nil, err
-    }
-
-    defer cursor.Close(ctx)
-    for cursor.Next(ctx) {
-        var cursoDAO dao.Curso
-        err := cursor.Decode(&cursoDAO)
-        if err != nil {
-            return nil, err
-        }
-        cursosDAO = append(cursosDAO, cursoDAO)
-    }
-
-    var cursos []domain.CursoData
-    for _, cursoDAO := range cursosDAO {
-        cursos = append(cursos, ToDomainCurso(cursoDAO))
-    }
-
-    return cursos, nil
-}
-
-
-func DeleteCursoByName(nombre string) error {
-    collection := GetCursoCollection()
-
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-    defer cancel()
-
-    result, err := collection.DeleteOne(ctx, bson.M{"nombre": nombre})
-    if err != nil {
-        return err
-    }
-
-    if result.DeletedCount == 0 {
-        return mongo.ErrNoDocuments
+        return fmt.Errorf("error actualizando curso: %w", err)
     }
 
     return nil
 }
 
-
-func UpdateCurso(cursoID int64, updateData bson.M) error {
-    collection := GetCursoCollection()
-
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-    defer cancel()
-
-    filter := bson.M{"curso_id": cursoID}
-    update := bson.M{"$set": updateData}
-
-    _, err := collection.UpdateOne(ctx, filter, update)
-    return err
+func (service CursoService) Delete(ctx context.Context, id string) error {
+    err := service.mainRepository.Delete(ctx, id)
+    if err != nil {
+        return fmt.Errorf("error eliminando curso: %w", err)
+    }
+    return nil
 }
-
