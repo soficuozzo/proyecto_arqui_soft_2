@@ -21,10 +21,6 @@ type Memcached struct {
 	client *memcache.Client
 }
 
-func usernameKey(username string) string {
-	return fmt.Sprintf("username:%s", username)
-}
-
 func NewMemcached(config MemcachedConfig) Memcached {
 	// Connect to Memcached
 	address := fmt.Sprintf("%s:%s", config.Host, config.Port)
@@ -41,19 +37,28 @@ func (repository Memcached) GetUsuariobyEmail(email string) (dao.Usuario, error)
 
 	if err != nil {
 		if errors.Is(err, memcache.ErrCacheMiss) {
-			return dao.Usuario{}, fmt.Errorf("Usuario no encontrado")
+			return dao.Usuario{}, fmt.Errorf("usuario no encontrado")
 		}
 		return dao.Usuario{}, fmt.Errorf("error fetching user by username from memcached: %w", err)
 	}
 
-	var user dao.Usuario
+	var user domain.UsuarioData
 	// check de que esten bien lo encontrado
 
 	if err := json.Unmarshal(item.Value, &user); err != nil {
 		return dao.Usuario{}, fmt.Errorf("error unmarshaling user: %w", err)
 	}
 
-	return user, nil
+	userf := dao.Usuario{
+		UsuarioID:    user.UsuarioID,
+		Nombre:       user.Nombre,
+		Apellido:     user.Apellido,
+		Email:        user.Email,
+		Passwordhash: user.Passwordhash,
+		Tipo:         user.Tipo,
+	}
+
+	return userf, nil
 
 }
 
@@ -70,20 +75,29 @@ func (repository Memcached) GetUsuariobyID(id int64) (dao.Usuario, error) {
 		return dao.Usuario{}, fmt.Errorf("error fetching user by username from memcached: %w", err)
 	}
 
-	var user dao.Usuario
+	fmt.Println("Valor crudo de Memcached:", string(item.Value))
+
+	var user domain.UsuarioData
 	// check de que esten bien lo encontrado
 
 	if err := json.Unmarshal(item.Value, &user); err != nil {
 		return dao.Usuario{}, fmt.Errorf("error unmarshaling user: %w", err)
 	}
 
-	repository.client.Set(&memcache.Item{Key: "user:id:1", Value: item.Value})
+	userf := dao.Usuario{
+		UsuarioID:    user.UsuarioID,
+		Nombre:       user.Nombre,
+		Apellido:     user.Apellido,
+		Email:        user.Email,
+		Passwordhash: user.Passwordhash,
+		Tipo:         user.Tipo,
+	}
 
-	return user, nil
+	return userf, nil
 
 }
 
-func (repository Memcached) Actualizar(usuario domain.UsuarioData) (int64, error) {
+func (repository Memcached) Actualizar(usuario domain.UsuarioData) error {
 
 	// Serialize user data
 	data, err := json.Marshal(usuario)
@@ -91,38 +105,23 @@ func (repository Memcached) Actualizar(usuario domain.UsuarioData) (int64, error
 	fmt.Println("JSON serializado:", string(data))
 
 	if err != nil {
-		return 0, fmt.Errorf("error marshaling user: %w", err)
+		return fmt.Errorf("error marshaling user: %w", err)
 	}
 
 	// Store user with ID as key and username as an alternate key
 	idKey := fmt.Sprintf("user:id:%d", usuario.UsuarioID)
-
-	if err := repository.client.Set(&memcache.Item{Key: idKey, Value: data}); err != nil {
-		return 0, fmt.Errorf("error storing user in memcached: %w", err)
+	if err := repository.client.Set(&memcache.Item{Key: idKey, Value: data, Expiration: 300}); err != nil {
+		return fmt.Errorf("error storing user in memcached: %w", err)
 	}
 
 	// Set key for username as well for easier lookup by username
 	emailKey := fmt.Sprintf("user:email:%s", usuario.Email)
-
-	if err := repository.client.Set(&memcache.Item{Key: emailKey, Value: data}); err != nil {
-		return 0, fmt.Errorf("error storing username in memcached: %w", err)
-	}
-
-	return usuario.UsuarioID, nil
-
-}
-
-func (repository Memcached) EliminarUsuario(id int64) error {
-	// Si el id es 0, la clave sería "user:id:0"
-	idKey := fmt.Sprintf("user:id:%d", id)
-
-	// Eliminar el usuario del cache
-	err := repository.client.Delete(idKey)
-	if err != nil {
-		return fmt.Errorf("error eliminando usuario de Memcached: %w", err)
+	if err := repository.client.Set(&memcache.Item{Key: emailKey, Value: data, Expiration: 300}); err != nil {
+		return fmt.Errorf("error storing username in memcached: %w", err)
 	}
 
 	return nil
+
 }
 
 func (repository Memcached) CrearUsuario(newusuario dao.Usuario) (dao.Usuario, error) {
@@ -134,13 +133,13 @@ func (repository Memcached) CrearUsuario(newusuario dao.Usuario) (dao.Usuario, e
 	}
 
 	idKey := fmt.Sprintf("user:id:%d", newusuario.UsuarioID)
-	if err := repository.client.Set(&memcache.Item{Key: idKey, Value: data}); err != nil {
+	if err := repository.client.Set(&memcache.Item{Key: idKey, Value: data, Expiration: 300}); err != nil {
 		return newusuario, fmt.Errorf("error storing user in memcached: %w", err)
 	}
 
 	emailKey := fmt.Sprintf("user:email:%s", newusuario.Email)
 
-	if err := repository.client.Set(&memcache.Item{Key: emailKey, Value: data}); err != nil {
+	if err := repository.client.Set(&memcache.Item{Key: emailKey, Value: data, Expiration: 300}); err != nil {
 		return newusuario, fmt.Errorf("error storing username in memcached: %w", err)
 	}
 

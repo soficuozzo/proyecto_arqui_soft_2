@@ -20,7 +20,7 @@ type Repository interface {
 	GetUsuariobyID(id int64) (dao.Usuario, error)
 
 	// actualizar cache y memcache
-	Actualizar(usuario domain.UsuarioData) (int64, error)
+	Actualizar(usuario domain.UsuarioData) error
 	CrearUsuario(newusuario dao.Usuario) (dao.Usuario, error)
 }
 
@@ -256,6 +256,8 @@ func (service Service) GetUsuariobyID(id int64) (domain.UsuarioData, error) {
 		log.Println("Datos obtenidos desde base de datos")
 
 		result := Usuario(usuarioo)
+
+		log.Println("Usuario obtenido desde Memcached:", result)
 
 		// actualizar cache
 		service.cacheRepository.Actualizar(result)

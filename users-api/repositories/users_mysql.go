@@ -24,7 +24,7 @@ type MySQL struct {
 }
 
 // Actualizar implements services.Repository.
-func (repository MySQL) Actualizar(usuario domain.UsuarioData) (int64, error) {
+func (repository MySQL) Actualizar(usuario domain.UsuarioData) error {
 	panic("unimplemented")
 }
 

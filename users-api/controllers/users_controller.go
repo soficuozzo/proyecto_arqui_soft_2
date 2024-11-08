@@ -13,7 +13,6 @@ import (
 type Service interface {
 	GetUsuariobyEmail(email string) (domain.UsuarioData, error)
 	GetUsuariobyID(id int64) (domain.UsuarioData, error)
-
 	CrearUsuario(newusuario domain.UsuarioData) (domain.UsuarioData, error)
 }
 
