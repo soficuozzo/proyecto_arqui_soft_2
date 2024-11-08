@@ -6,13 +6,13 @@ require (
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
-	github.com/jinzhu/gorm v1.9.16
 	github.com/sirupsen/logrus v1.9.3
+	gorm.io/gorm v1.25.7
 )
 
 require (
 	github.com/jinzhu/now v1.1.5 // indirect
-	gorm.io/gorm v1.25.7 // indirect
+	github.com/karlseguin/expect v1.0.8 // indirect
 )
 
 require (
@@ -29,7 +29,7 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/json-iterator/go v1.1.12
 	github.com/karlseguin/ccache v2.0.3+incompatible
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/kr/text v0.2.0 // indirect

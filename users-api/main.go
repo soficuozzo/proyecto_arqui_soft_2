@@ -14,11 +14,11 @@ func main() {
 	// MySQL
 	mySQLRepo := repositories.NewMySQL(
 		repositories.MySQLConfig{
-			Host:     "mysql",
+			Host:     "127.0.0.1",
 			Port:     "3306",
 			Database: "users-api",
 			Username: "root",
-			Password: "root",
+			Password: "root1234",
 		},
 	)
 
@@ -29,20 +29,23 @@ func main() {
 
 	// Memcached
 	memcachedRepo := repositories.NewMemcached(repositories.MemcachedConfig{
-		Host: "memcached",
+		Host: "localhost",
 		Port: "11211",
 	})
 
 	// Services
-	service := services.NewService(mySQLRepo, cacheRepo, memcachedRepo, jwtTokenizer)
 
+	service := services.NewService(mySQLRepo, cacheRepo, memcachedRepo)
 	// Handlers
-	controller := controllers.NewController(service)
+	controlleruser := controllers.NewController(service)
 
 	// Create router
 	router := gin.Default()
 
 	// URL mappings
+	router.GET("/users/:id", controlleruser.GetUsuariobyID)
+	router.GET("/users/email/:email", controlleruser.GetUsuariobyEmail)
+	router.POST("/users/create", controlleruser.CrearUsuario)
 
 	// Run application
 	if err := router.Run(":8080"); err != nil {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"proyecto_arqui_soft_2/users-api/dao"
+	"proyecto_arqui_soft_2/users-api/domain"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -20,6 +21,11 @@ type MySQLConfig struct {
 
 type MySQL struct {
 	db *gorm.DB
+}
+
+// Actualizar implements services.Repository.
+func (repository MySQL) Actualizar(usuario domain.UsuarioData) (int64, error) {
+	panic("unimplemented")
 }
 
 var (
@@ -49,4 +55,37 @@ func NewMySQL(config MySQLConfig) MySQL {
 	return MySQL{
 		db: db,
 	}
+}
+
+func (repository MySQL) GetUsuariobyEmail(email string) (dao.Usuario, error) {
+	var usuario dao.Usuario
+
+	result := repository.db.Where("email = ?", email).First(&usuario)
+	if result.Error != nil {
+		return usuario, result.Error
+	}
+
+	return usuario, nil
+}
+
+func (repository MySQL) GetUsuariobyID(id int64) (dao.Usuario, error) {
+	var usuario dao.Usuario
+
+	result := repository.db.Where("usuario_id = ?", id).First(&usuario)
+	if result.Error != nil {
+		return usuario, result.Error
+	}
+
+	return usuario, nil
+}
+
+func (repository MySQL) CrearUsuario(newusuario dao.Usuario) (dao.Usuario, error) {
+
+	result := repository.db.Create(&newusuario)
+
+	if result.Error != nil {
+		return newusuario, fmt.Errorf("error creating user: %w", result.Error)
+	}
+
+	return newusuario, nil
 }

@@ -2,10 +2,13 @@ package repositories
 
 import (
 	//"fmt"
+	"fmt"
+	"proyecto_arqui_soft_2/users-api/dao"
+	"proyecto_arqui_soft_2/users-api/domain"
+
 	"time"
 
 	"github.com/karlseguin/ccache"
-	//"proyecto_arqui_soft_2/users-api/dao"
 )
 
 type CacheConfig struct {
@@ -24,4 +27,62 @@ func NewCache(config CacheConfig) Cache {
 		client: cache,
 		ttl:    config.TTL,
 	}
+}
+
+// el email es una key en la cache ya que es unico. no van haber dos usuarios con el mismo email
+
+func (repository Cache) GetUsuariobyEmail(email string) (dao.Usuario, error) {
+	eKey := fmt.Sprintf("usuario:email:%s", email)
+
+	item := repository.client.Get(eKey)
+
+	if item != nil && !item.Expired() {
+		user, ok := item.Value().(dao.Usuario)
+		if !ok {
+			return dao.Usuario{}, fmt.Errorf("Error al recuperar usuario de la cache")
+		}
+		return user, nil
+	}
+
+	return dao.Usuario{}, fmt.Errorf("Usuario no encontrado en la cache con email %s", email)
+}
+
+func (repository Cache) GetUsuariobyID(id int64) (dao.Usuario, error) {
+	idKey := fmt.Sprintf("user:id:%d", id)
+
+	item := repository.client.Get(idKey)
+
+	if item != nil && !item.Expired() {
+		user, ok := item.Value().(dao.Usuario)
+		if !ok {
+			return dao.Usuario{}, fmt.Errorf("Error al recuperar usuario de la cache")
+		}
+		return user, nil
+	}
+
+	return dao.Usuario{}, fmt.Errorf("Usuario no encontrado en la cache con email %d", id)
+}
+
+func (repository Cache) Actualizar(usuario domain.UsuarioData) (int64, error) {
+
+	idKey := fmt.Sprintf("user:id:%d", usuario.UsuarioID)
+	eKey := fmt.Sprintf("user:email:%s", usuario.Email)
+
+	repository.client.Set(idKey, usuario, repository.ttl)
+	repository.client.Set(eKey, usuario, repository.ttl)
+
+	return usuario.UsuarioID, nil
+
+}
+
+func (repository Cache) CrearUsuario(newusuario dao.Usuario) (dao.Usuario, error) {
+
+	idKey := fmt.Sprintf("usuario:id:%d", newusuario.UsuarioID)
+	eKey := fmt.Sprintf("usuario:email:%s", newusuario.Email)
+
+	repository.client.Set(idKey, newusuario, repository.ttl)
+	repository.client.Set(eKey, newusuario, repository.ttl)
+
+	return newusuario, nil
+
 }
