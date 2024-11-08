@@ -242,8 +242,6 @@ func (service Service) GetUsuariobyID(id int64) (domain.UsuarioData, error) {
 
 		result := Usuario(usuarioo)
 
-		log.Printf("Usuario obtenido: %+v\n", result)
-
 		service.cacheRepository.Actualizar(result)
 
 		return result, nil
@@ -256,8 +254,6 @@ func (service Service) GetUsuariobyID(id int64) (domain.UsuarioData, error) {
 		log.Println("Datos obtenidos desde base de datos")
 
 		result := Usuario(usuarioo)
-
-		log.Println("Usuario obtenido desde Memcached:", result)
 
 		// actualizar cache
 		service.cacheRepository.Actualizar(result)

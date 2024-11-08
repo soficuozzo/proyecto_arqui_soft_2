@@ -37,11 +37,22 @@ func (repository Cache) GetUsuariobyEmail(email string) (dao.Usuario, error) {
 	item := repository.client.Get(eKey)
 
 	if item != nil && !item.Expired() {
-		user, ok := item.Value().(dao.Usuario)
+		user, ok := item.Value().(domain.UsuarioData)
+
 		if !ok {
 			return dao.Usuario{}, fmt.Errorf("Error al recuperar usuario de la cache")
 		}
-		return user, nil
+
+		userf := dao.Usuario{
+			UsuarioID:    user.UsuarioID,
+			Nombre:       user.Nombre,
+			Apellido:     user.Apellido,
+			Email:        user.Email,
+			Passwordhash: user.Passwordhash,
+			Tipo:         user.Tipo,
+		}
+
+		return userf, nil
 	}
 
 	return dao.Usuario{}, fmt.Errorf("Usuario no encontrado en la cache con email %s", email)
@@ -53,11 +64,23 @@ func (repository Cache) GetUsuariobyID(id int64) (dao.Usuario, error) {
 	item := repository.client.Get(idKey)
 
 	if item != nil && !item.Expired() {
-		user, ok := item.Value().(dao.Usuario)
+
+		user, ok := item.Value().(domain.UsuarioData)
+
 		if !ok {
 			return dao.Usuario{}, fmt.Errorf("Error al recuperar usuario de la cache")
 		}
-		return user, nil
+
+		userf := dao.Usuario{
+			UsuarioID:    user.UsuarioID,
+			Nombre:       user.Nombre,
+			Apellido:     user.Apellido,
+			Email:        user.Email,
+			Passwordhash: user.Passwordhash,
+			Tipo:         user.Tipo,
+		}
+
+		return userf, nil
 	}
 
 	return dao.Usuario{}, fmt.Errorf("Usuario no encontrado en la cache con email %d", id)
@@ -71,14 +94,16 @@ func (repository Cache) Actualizar(usuario domain.UsuarioData) error {
 	repository.client.Set(idKey, usuario, repository.ttl)
 	repository.client.Set(eKey, usuario, repository.ttl)
 
+	fmt.Println("Usuario guardado en cache con éxito.")
+
 	return nil
 
 }
 
 func (repository Cache) CrearUsuario(newusuario dao.Usuario) (dao.Usuario, error) {
 
-	idKey := fmt.Sprintf("usuario:id:%d", newusuario.UsuarioID)
-	eKey := fmt.Sprintf("usuario:email:%s", newusuario.Email)
+	idKey := fmt.Sprintf("user:id:%d", newusuario.UsuarioID)
+	eKey := fmt.Sprintf("user:email:%s", newusuario.Email)
 
 	repository.client.Set(idKey, newusuario, repository.ttl)
 	repository.client.Set(eKey, newusuario, repository.ttl)

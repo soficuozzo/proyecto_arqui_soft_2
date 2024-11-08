@@ -102,8 +102,6 @@ func (repository Memcached) Actualizar(usuario domain.UsuarioData) error {
 	// Serialize user data
 	data, err := json.Marshal(usuario)
 
-	fmt.Println("JSON serializado:", string(data))
-
 	if err != nil {
 		return fmt.Errorf("error marshaling user: %w", err)
 	}
