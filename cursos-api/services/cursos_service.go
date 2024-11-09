@@ -3,26 +3,30 @@ package services
 import (
 	"context"
 	"fmt"
+	"proyecto_arqui_soft_2/cursos-api/clients"
 	"proyecto_arqui_soft_2/cursos-api/dao"
 	"proyecto_arqui_soft_2/cursos-api/domain"
 
-	"go.mongodb.org/mongo-driver/bson" // Asegúrate de importar el paquete bson
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Repository interface {
 	GetCursoByID(ctx context.Context, id string) (dao.Curso, error)
 	Create(ctx context.Context, curso dao.Curso) (string, error)
-	Update(ctx context.Context, id string, updateData bson.M) error // Cambiado a bson.M
+	Update(ctx context.Context, id string, updateData bson.M) error
 	Delete(ctx context.Context, id string) error
 }
 
 type CursoService struct {
 	mainRepository Repository
+	rabbitClient   clients.Rabbit // Agregar el campo rabbitClient
 }
 
-func NewCursoService(mainRepository Repository) CursoService {
+// Modificar NewCursoService para recibir rabbitClient y asignarlo
+func NewCursoService(mainRepository Repository, rabbitClient clients.Rabbit) CursoService {
 	return CursoService{
 		mainRepository: mainRepository,
+		rabbitClient:   rabbitClient,
 	}
 }
 
@@ -66,7 +70,7 @@ func (service CursoService) Update(ctx context.Context, curso domain.CursoData) 
 		updateData["descripcion"] = curso.Descripcion
 	}
 	if curso.Categoria != "" {
-		updateData["categoria_id"] = curso.Categoria
+		updateData["categoria"] = curso.Categoria
 	}
 	if curso.Capacidad != 0 {
 		updateData["capacidad"] = curso.Capacidad
@@ -76,9 +80,14 @@ func (service CursoService) Update(ctx context.Context, curso domain.CursoData) 
 		return fmt.Errorf("no hay campos para actualizar")
 	}
 
-	err := service.mainRepository.Update(ctx, curso.CursoID, updateData) // Se queda igual
+	err := service.mainRepository.Update(ctx, curso.CursoID, updateData)
 	if err != nil {
 		return fmt.Errorf("error actualizando curso: %w", err)
+	}
+
+	// Publicar mensaje en RabbitMQ tras una actualización exitosa
+	if err := service.rabbitClient.Publish(curso); err != nil {
+		return fmt.Errorf("error publicando mensaje en RabbitMQ: %w", err)
 	}
 
 	return nil

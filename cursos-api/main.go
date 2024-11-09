@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"log"
-
+	"proyecto_arqui_soft_2/cursos-api/clients"
 	"proyecto_arqui_soft_2/cursos-api/controllers"
 	"proyecto_arqui_soft_2/cursos-api/repositories"
 	"proyecto_arqui_soft_2/cursos-api/services"
@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	// Configuración del repositorio principal
+	// Configuración de MongoDB
 	mainRepository := repositories.NewMongo(repositories.MongoConfig{
 		Host:       "localhost",
 		Port:       "27017",
@@ -30,9 +30,20 @@ func main() {
 		log.Println("¡Conexión a MongoDB exitosa!")
 	}
 
-	cursoService := services.NewCursoService(mainRepository)
+	// Configuración de RabbitMQ
+	rabbitClient := clients.NewRabbit(clients.RabbitConfig{
+		Host:      "localhost",
+		Port:      "5672",
+		Username:  "user",
+		Password:  "password",
+		QueueName: "curso_actualizado",
+	})
+	defer rabbitClient.Close()
 
-	// Creación del controlador de cursos
+	// Crear servicio con RabbitMQ y MongoDB
+	cursoService := services.NewCursoService(mainRepository, rabbitClient)
+
+	// Crear controlador de cursos
 	cursoController := controllers.NewCursoController(cursoService)
 
 	// Configuración de rutas
