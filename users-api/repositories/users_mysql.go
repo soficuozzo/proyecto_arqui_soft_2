@@ -1,43 +1,91 @@
 package repositories
 
 import (
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
-	log "github.com/sirupsen/logrus"
-
+	//"errors"
+	"fmt"
+	"log"
 	"proyecto_arqui_soft_2/users-api/dao"
+	"proyecto_arqui_soft_2/users-api/domain"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-var (
-	db  *gorm.DB
-	err error
-)
-
-func init() {
-	// DB Connections Paramters
-	DBName := "users"     //Nombre de la base de datos local de ustedes
-	DBUser := "root"      //usuario de la base de datos, habitualmente root
-	DBPass := "root"      //password del root en la instalacion
-	DBHost := "127.0.0.1" //host de la base de datos. hbitualmente 127.0.0.1
-	// ------------------------
-
-	// abrimos la base de datos
-	db, err = gorm.Open("mysql", DBUser+":"+DBPass+"@tcp("+DBHost+":3306)/"+DBName+"?charset=utf8&parseTime=True")
-
-	if err != nil {
-		log.Info("Connection Failed to Open")
-		log.Fatal(err)
-	} else {
-		log.Info("Connection Established")
-	}
-
-	// We need to add all CLients that we build
-
+type MySQLConfig struct {
+	Host     string
+	Port     string
+	Database string
+	Username string
+	Password string
 }
 
-func StartDbEngine() {
-	// We need to migrate all classes model.
-	db.AutoMigrate(&dao.Usuario{})
+type MySQL struct {
+	db *gorm.DB
+}
 
-	log.Info("Finishing Migration Database Tables")
+// Actualizar implements services.Repository.
+func (repository MySQL) Actualizar(usuario domain.UsuarioData) error {
+	panic("unimplemented")
+}
+
+var (
+	migrate = []interface{}{
+		dao.Usuario{},
+	}
+)
+
+func NewMySQL(config MySQLConfig) MySQL {
+	// Build DSN (Data Source Name)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		config.Username, config.Password, config.Host, config.Port, config.Database)
+
+	// Open connection to MySQL using GORM
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("failed to connect to MySQL: %s", err.Error())
+	}
+
+	// Automigrate structs to Gorm
+	for _, target := range migrate {
+		if err := db.AutoMigrate(target); err != nil {
+			log.Fatalf("error automigrating structs: %s", err.Error())
+		}
+	}
+
+	return MySQL{
+		db: db,
+	}
+}
+
+func (repository MySQL) GetUsuariobyEmail(email string) (dao.Usuario, error) {
+	var usuario dao.Usuario
+
+	result := repository.db.Where("email = ?", email).First(&usuario)
+	if result.Error != nil {
+		return usuario, result.Error
+	}
+
+	return usuario, nil
+}
+
+func (repository MySQL) GetUsuariobyID(id int64) (dao.Usuario, error) {
+	var usuario dao.Usuario
+
+	result := repository.db.Where("usuario_id = ?", id).First(&usuario)
+	if result.Error != nil {
+		return usuario, result.Error
+	}
+
+	return usuario, nil
+}
+
+func (repository MySQL) CrearUsuario(newusuario dao.Usuario) (dao.Usuario, error) {
+
+	result := repository.db.Create(&newusuario)
+
+	if result.Error != nil {
+		return newusuario, fmt.Errorf("error creating user: %w", result.Error)
+	}
+
+	return newusuario, nil
 }
