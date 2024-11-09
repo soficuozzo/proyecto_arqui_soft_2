@@ -1,5 +1,6 @@
 package controllers
 
+
 import (
 	"context"
 	"fmt"
@@ -106,3 +107,4 @@ func (controller CursoController) Delete(ctx *gin.Context) {
 		"message": "Curso eliminado",
 	})
 }
+
