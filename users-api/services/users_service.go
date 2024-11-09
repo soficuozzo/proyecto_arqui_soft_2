@@ -218,7 +218,6 @@ func (service Service) CrearUsuario(newusuario domain.UsuarioData) (domain.Usuar
 	service.cacheRepository.CrearUsuario(user)
 
 	return newusuario, nil
-
 }
 
 func (service Service) GetUsuariobyID(id int64) (domain.UsuarioData, error) {

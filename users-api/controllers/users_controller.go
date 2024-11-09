@@ -14,6 +14,7 @@ type Service interface {
 	GetUsuariobyEmail(email string) (domain.UsuarioData, error)
 	GetUsuariobyID(id int64) (domain.UsuarioData, error)
 	CrearUsuario(newusuario domain.UsuarioData) (domain.UsuarioData, error)
+	Login(email string, password string) (string, error)
 }
 
 type Controller struct {
@@ -93,4 +94,28 @@ func (controller Controller) CrearUsuario(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, newusuario)
 
+}
+
+func (controller Controller) Login(c *gin.Context) {
+	var request domain.LoginRequest
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, domain.Resultado{
+			Mensaje: fmt.Sprintf("Request invalido: %s", err.Error()),
+		})
+		return
+	}
+
+	token, err := controller.service.Login(request.Email, request.Password)
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, domain.Resultado{
+			Mensaje: fmt.Sprintf("Login no autorizado: %s", err.Error()),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, domain.LoginResponse{
+		Token: token,
+	})
 }

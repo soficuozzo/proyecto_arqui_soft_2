@@ -94,8 +94,6 @@ func (repository Cache) Actualizar(usuario domain.UsuarioData) error {
 	repository.client.Set(idKey, usuario, repository.ttl)
 	repository.client.Set(eKey, usuario, repository.ttl)
 
-	fmt.Println("Usuario guardado en cache con éxito.")
-
 	return nil
 
 }
