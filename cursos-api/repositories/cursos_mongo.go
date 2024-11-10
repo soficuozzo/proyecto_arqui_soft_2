@@ -5,13 +5,36 @@ import (
 	"fmt"
 	"log"
 	cursosDAO "proyecto_arqui_soft_2/cursos-api/dao"
+	"proyecto_arqui_soft_2/cursos-api/domain"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	//agregue yo para inscripcion
+	"proyecto_arqui_soft_2/cursos-api/dao"
 )
 
+// lo agregue para inscripcion
+type CursosRepository interface {
+	ObtenerCursoPorID(cursoID string) (dao.Curso, error)
+	ActualizarCurso(curso dao.Curso) error
+}
+
+type CursosRepositoryImpl struct{}
+
+func NewCursosRepository() CursosRepository {
+	return &CursosRepositoryImpl{}
+}
+
+// Definición de la interfaz InscripcionRepository
+type InscripcionRepository interface {
+	Inscribir(ctx context.Context, cursoID string) error
+	// Otros métodos según tus necesidades
+}
+
+// -----------------------------------------------------------------------------------------
 type MongoConfig struct {
 	Host       string
 	Port       string
@@ -25,6 +48,16 @@ type Mongo struct {
 	client     *mongo.Client
 	database   string
 	collection string
+}
+
+// GetInscripcionByUserId implements services.Repository.
+func (repository Mongo) GetInscripcionByUserId(ctx context.Context, userid int64) ([]dao.Inscripcion, error) {
+	panic("unimplemented")
+}
+
+// InscribirCurso implements services.Repository.
+func (repository Mongo) InscribirCurso(ctx context.Context, inscripcion dao.Inscripcion) error {
+	panic("unimplemented")
 }
 
 const (
@@ -68,6 +101,64 @@ func (repository Mongo) GetCursoByID(ctx context.Context, id string) (cursosDAO.
 		return cursosDAO.Curso{}, fmt.Errorf("error decoding result: %w", err)
 	}
 	return curso, nil
+}
+func (repository Mongo) GetCursosByIds(ctx context.Context, ids []string) ([]domain.CursoData, error) {
+	// Convertir cada ID en ObjectID
+	objectIDs := make([]primitive.ObjectID, 0, len(ids))
+	for _, id := range ids {
+		objectID, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return nil, fmt.Errorf("error converting id to mongo ID: %w", err)
+		}
+		objectIDs = append(objectIDs, objectID)
+	}
+
+	fmt.Println("ObjectIDs:", objectIDs) // Verifica los ObjectIDs
+
+	// Crear filtro para encontrar múltiples documentos
+	filter := bson.M{"_id": bson.M{"$in": objectIDs}}
+
+	// Ejecutar la consulta
+	cursor, err := repository.client.Database(repository.database).
+		Collection(repository.collection).Find(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("error finding documents: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	// Decodificar resultados
+	var cursos []domain.CursoData
+	for cursor.Next(ctx) {
+		var curso struct {
+			CursoID     primitive.ObjectID `bson:"_id"`
+			Nombre      string             `bson:"nombre"`
+			Descripcion string             `bson:"descripcion"`
+			Categoria   string             `bson:"categoria"`
+			Capacidad   int64              `bson:"capacidad"`
+		}
+
+		if err := cursor.Decode(&curso); err != nil {
+			return nil, fmt.Errorf("error decoding result: %w", err)
+		}
+		fmt.Println("Curso decodificado:", curso) // Verifica el contenido decodificado
+
+		// Convertir el ObjectID a string para el dominio
+		cursoData := domain.CursoData{
+			CursoID:     curso.CursoID.Hex(), // Convertimos el ObjectID a string
+			Nombre:      curso.Nombre,
+			Descripcion: curso.Descripcion,
+			Categoria:   curso.Categoria,
+			Capacidad:   curso.Capacidad,
+		}
+
+		cursos = append(cursos, cursoData)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("cursor error: %w", err)
+	}
+
+	return cursos, nil
 }
 
 func (repository Mongo) Create(ctx context.Context, curso cursosDAO.Curso) (string, error) {
@@ -127,5 +218,25 @@ func (repository Mongo) TestConnection(ctx context.Context) error {
 	if err := repository.client.Ping(ctx, nil); err != nil {
 		return fmt.Errorf("error al hacer ping a MongoDB: %w", err)
 	}
+	return nil
+}
+
+//lo agregue para inscripcion
+
+// Obtiene un curso por su ID
+func (repo *CursosRepositoryImpl) ObtenerCursoPorID(cursoID string) (dao.Curso, error) {
+	// Simulamos la obtención de un curso desde la base de datos
+	return dao.Curso{
+		CursoID:     cursoID,
+		Nombre:      "Curso de Ejemplo",
+		Descripcion: "Descripción del curso",
+		Categoria:   "Tecnología",
+		Capacidad:   10,
+	}, nil
+}
+
+// Actualiza un curso en la base de datos
+func (repo *CursosRepositoryImpl) ActualizarCurso(curso dao.Curso) error {
+	// Simulamos la actualización exitosa del curso en la base de datos
 	return nil
 }
