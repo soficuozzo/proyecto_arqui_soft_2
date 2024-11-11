@@ -7,4 +7,8 @@ type CursoData struct {
 	Categoria   string `json:"categoria"`
 	Capacidad   int64  `json:"capacidad"`
 	Imagen      string `json:"imagen,omitempty"`
+	Valoracion   int64  `json:"valoracion"`
+	Requisito   string  `json:"requisito"`
+	Profesor   string  `json:"profesor"`
+	Duracion int64  `json:"duracion"`
 }
