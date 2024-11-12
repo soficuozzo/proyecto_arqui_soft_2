@@ -16,8 +16,8 @@ func main() {
 	mainRepository := repositories.NewMongo(repositories.MongoConfig{
 		Host:       "localhost",
 		Port:       "27017",
-		Username:   "root",
-		Password:   "root",
+		Username:   "sofia",
+		Password:   "1234",
 		Database:   "cursos_db",
 		Collection: "cursos",
 	})
@@ -28,7 +28,7 @@ func main() {
 			Port:     "3306",
 			Database: "users-api",
 			Username: "root",
-			Password: "root1234",
+			Password: "root",
 		},
 	)
 

@@ -18,7 +18,7 @@ func main() {
 			Port:     "3306",
 			Database: "users-api",
 			Username: "root",
-			Password: "root1234",
+			Password: "root",
 		},
 	)
 

@@ -21,6 +21,4 @@ type DisponibilidadCurso struct {
 	Disponibilidad int64  `json:"disponibilidad"`
 }
 
-// type Cursos []Curso no se si va aca
-
 type Inscripciones []Inscripcion
