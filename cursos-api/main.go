@@ -53,6 +53,12 @@ func main() {
 	router.DELETE("/cursos/:id", cursoController.Delete)
 	router.POST("/inscripcion", cursoController.CrearInscripcion)
 	router.GET("/usuario/miscursos/:id", cursoController.GetInscripcionByUserId)
+
+	//--------------------------------------------------------------------------------
+	//lo agregue para TODOS los cursos
+	router.GET("/cursos/todos", cursoController.GetAllCursos)
+	//------------------------------------------------------------------------------
+
 	// Inicia el servidor en el puerto 8081
 	if err := router.Run(":8081"); err != nil {
 		log.Fatalf("Error al iniciar el servidor: %v", err)

@@ -26,6 +26,7 @@ type Repository interface {
 	InscribirCurso(ctx context.Context, inscripcion dao.Inscripcion) error
 
 	GetInscripcionByUserId(ctx context.Context, userid int64) ([]dao.Inscripcion, error)
+	GetAllCursos(ctx context.Context) ([]domain.CursoData, error)
 
 	GetCursosByIds(tx context.Context, id []string) ([]domain.CursoData, error)
 }
@@ -85,11 +86,11 @@ func (service CursoService) GetCursosbyIds(ctx context.Context, id []string) ([]
 			Descripcion: curso.Descripcion,
 			Categoria:   curso.Categoria,
 			Capacidad:   curso.Capacidad,
-			Requisito: 	curso.Requisito,
-			Duracion: 	curso.Duracion,
-			Imagen: 	curso.Imagen,
-			Valoracion: curso.Valoracion,
-			Profesor: 	curso.Profesor,
+			Requisito:   curso.Requisito,
+			Duracion:    curso.Duracion,
+			Imagen:      curso.Imagen,
+			Valoracion:  curso.Valoracion,
+			Profesor:    curso.Profesor,
 		})
 	}
 
@@ -190,7 +191,7 @@ func (service CursoService) Create(ctx context.Context, curso domain.CursoData) 
 		Duracion:    curso.Duracion,
 		Imagen:      curso.Imagen,
 		Valoracion:  curso.Valoracion,
-		Profesor:     curso.Profesor,
+		Profesor:    curso.Profesor,
 	}
 
 	id, err := service.mainRepository.Create(ctx, cursoDAO)
@@ -218,31 +219,27 @@ func (service CursoService) Update(ctx context.Context, curso domain.CursoData) 
 
 	if curso.Profesor != "" {
 		updateData["profesor"] = curso.Profesor
-	}	
+	}
 
 	if curso.Requisito != "" {
 		updateData["requisito"] = curso.Requisito
-	}	
-
+	}
 
 	if curso.Duracion != 0 {
 		updateData["duracion"] = curso.Duracion
-	}	
-
+	}
 
 	if curso.Imagen != "" {
 		updateData["imagen"] = curso.Imagen
-	}	
+	}
 
 	if curso.Valoracion != 0 {
 		updateData["valoracion"] = curso.Valoracion
-	}	
-
+	}
 
 	if len(updateData) == 0 {
 		return fmt.Errorf("no hay campos para actualizar")
 	}
-
 
 	err := service.mainRepository.Update(ctx, curso.CursoID, updateData) // Se queda igual
 	if err != nil {
@@ -258,4 +255,32 @@ func (service CursoService) Delete(ctx context.Context, id string) error {
 		return fmt.Errorf("error eliminando curso: %w", err)
 	}
 	return nil
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------
+
+// lo agregue para TODOS los cursos, para que vaya mostrando cursos a mis cursos mediante lo vas agregando
+func (service CursoService) GetAllCursos(ctx context.Context) ([]domain.CursoData, error) {
+	cursosDAO, err := service.mainRepository.GetAllCursos(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error obteniendo cursos: %w", err)
+	}
+
+	var cursos []domain.CursoData
+	for _, cursoDAO := range cursosDAO {
+		cursos = append(cursos, domain.CursoData{
+			CursoID:     cursoDAO.CursoID,
+			Nombre:      cursoDAO.Nombre,
+			Descripcion: cursoDAO.Descripcion,
+			Categoria:   cursoDAO.Categoria,
+			Capacidad:   cursoDAO.Capacidad,
+			Requisito:   cursoDAO.Requisito,
+			Duracion:    cursoDAO.Duracion,
+			Imagen:      cursoDAO.Imagen,
+			Valoracion:  cursoDAO.Valoracion,
+			Profesor:    cursoDAO.Profesor,
+		})
+	}
+
+	return cursos, nil
 }
