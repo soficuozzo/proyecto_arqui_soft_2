@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/stevenferrer/solr-go"
-	cursos "proyecto_arqui_soft_2/search-api/dao"
+	cursosDomain "proyecto_arqui_soft_2/search-api/domain"
 )
 
 type SolrConfig struct {
@@ -18,22 +18,24 @@ type SolrConfig struct {
 type Solr struct {
 	Client     *solr.JSONClient
 	Collection string
+	BaseURL    string
 }
 
 // NewSolr initializes a new Solr client
 func NewSolr(config SolrConfig) Solr {
 	// Construct the BaseURL using the provided host and port
-	baseURL := fmt.Sprintf("http://%s:%s", config.Host, config.Port)
-	client := solr.NewJSONClient(baseURL)
+    baseURL := fmt.Sprintf("http://%s:%s/solr/%s", config.Host, config.Port, config.Collection)
+    client := solr.NewJSONClient(baseURL)
 
 	return Solr{
 		Client:     client,
 		Collection: config.Collection,
+		BaseURL:    baseURL,
 	}
 }
 
 // Index adds a new cursos document to the Solr collection
-func (searchEngine Solr) Index(ctx context.Context, curso cursos.Curso) (string, error) {
+func (searchEngine Solr) Index(ctx context.Context, curso cursosDomain.CursoData) (string, error) {
 	// Prepare the document for Solr
 	doc := map[string]interface{}{
 		"curso_id": 	  curso.CursoID,
@@ -41,6 +43,11 @@ func (searchEngine Solr) Index(ctx context.Context, curso cursos.Curso) (string,
 		"descripcion": curso.Descripcion,
 		"categoria": curso.Categoria,
 		"capacidad": curso.Capacidad,
+		"imagen": curso.Imagen,
+		"valoracion": curso.Valoracion,
+		"requisito": curso.Requisito,
+		"profesor": curso.Profesor,
+		"duracion": curso.Duracion,
 	}
 
 	// Prepare the index request
@@ -53,6 +60,8 @@ func (searchEngine Solr) Index(ctx context.Context, curso cursos.Curso) (string,
 	if err != nil {
 		return "", fmt.Errorf("error marshaling curso document: %w", err)
 	}
+		// Log the URL being used for indexing
+		fmt.Printf("Indexing URL: %s/update\n", searchEngine.BaseURL)
 
 	// Index the document in Solr
 	resp, err := searchEngine.Client.Update(ctx, searchEngine.Collection, solr.JSON, bytes.NewReader(body))
@@ -67,12 +76,12 @@ func (searchEngine Solr) Index(ctx context.Context, curso cursos.Curso) (string,
 	if err := searchEngine.Client.Commit(ctx, searchEngine.Collection); err != nil {
 		return "", fmt.Errorf("error committing changes to Solr: %w", err)
 	}
-
+	fmt.Println("Indexado")
 	return curso.CursoID, nil
 }
 
 // Update modifies an existing curso document in the Solr collection
-func (searchEngine Solr) Update(ctx context.Context, curso cursos.Curso) error {
+func (searchEngine Solr) Update(ctx context.Context, curso cursosDomain.CursoData) error {
 	// Prepare the document for Solr
 	doc := map[string]interface{}{
 		"curso_id": 	  curso.CursoID,
@@ -80,6 +89,11 @@ func (searchEngine Solr) Update(ctx context.Context, curso cursos.Curso) error {
 		"descripcion": curso.Descripcion,
 		"categoria": curso.Categoria,
 		"capacidad": curso.Capacidad,
+		"imagen": curso.Imagen,
+		"valoracion": curso.Valoracion,
+		"requisito": curso.Requisito,
+		"profesor": curso.Profesor,
+		"duracion": curso.Duracion,
 	}
 
 	// Prepare the update request
@@ -141,9 +155,10 @@ func (searchEngine Solr) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (searchEngine Solr) Search(ctx context.Context, query string, limit int, offset int) ([]cursos.Curso, error) {
+func (searchEngine Solr) Search(ctx context.Context, query string, limit int, offset int) ([]cursosDomain.CursoData, error) {
 	// Prepare the Solr query with limit and offset
 	solrQuery := fmt.Sprintf("q=(nombre:%s)&rows=%d&start=%d", query, limit, offset)
+	fmt.Printf("Searching URL: %s/select?%s\n", searchEngine.BaseURL, solrQuery)
 
 	// Execute the search request
 	resp, err := searchEngine.Client.Query(ctx, searchEngine.Collection, solr.NewQuery(solrQuery))
@@ -155,17 +170,22 @@ func (searchEngine Solr) Search(ctx context.Context, query string, limit int, of
 	}
 
 	// Parse the response and extract curso documents
-	var cursosList []cursos.Curso
+	var cursosList []cursosDomain.CursoData
 	for _, doc := range resp.Response.Documents {
 	
 
 		// Safely extract curso fields with type assertions
-		cursos := cursos.Curso{
+		cursos := cursosDomain.CursoData{
 			CursoID:        getStringField(doc, "curso_id"),
 			Nombre:      getStringField(doc, "nombre"),
 			Descripcion:   getStringField(doc, "descripcion"),
 			Categoria:      getStringField(doc, "categoria"),
 			Capacidad:     getIntField(doc, "capacidad"),
+			Imagen:      getStringField(doc, "imagen"),
+			Valoracion:  getIntField(doc, "valoracion"),
+			Requisito:   getStringField(doc, "requisito"),
+			Profesor:   getStringField(doc, "profesor"),
+			Duracion:  	getIntField(doc, "duracion"),
 		}
 		cursosList = append(cursosList, cursos)
 	}

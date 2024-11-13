@@ -91,6 +91,11 @@ func (service CursoService) GetCursosbyIds(ctx context.Context, id []string) ([]
 			Descripcion: curso.Descripcion,
 			Categoria:   curso.Categoria,
 			Capacidad:   curso.Capacidad,
+			Requisito: 	curso.Requisito,
+			Duracion: 	curso.Duracion,
+			Imagen: 	curso.Imagen,
+			Valoracion: curso.Valoracion,
+			Profesor: 	curso.Profesor,
 		})
 	}
 
@@ -173,6 +178,11 @@ func (service CursoService) GetCursoByID(ctx context.Context, id string) (domain
 		Descripcion: cursoDAO.Descripcion,
 		Categoria:   cursoDAO.Categoria,
 		Capacidad:   cursoDAO.Capacidad,
+		Requisito:   cursoDAO.Requisito,
+		Duracion:    cursoDAO.Duracion,
+		Imagen:      cursoDAO.Imagen,
+		Valoracion:  cursoDAO.Valoracion,
+		Profesor:    cursoDAO.Profesor,
 	}, nil
 }
 
@@ -182,6 +192,12 @@ func (service CursoService) Create(ctx context.Context, curso domain.CursoData) 
 		Descripcion: curso.Descripcion,
 		Categoria:   curso.Categoria,
 		Capacidad:   curso.Capacidad,
+		Requisito:   curso.Requisito,
+		Duracion:    curso.Duracion,
+		Imagen:      curso.Imagen,
+		Valoracion:  curso.Valoracion,
+		Profesor:     curso.Profesor,
+
 	}
 
 	id, err := service.mainRepository.Create(ctx, cursoDAO)
@@ -212,6 +228,27 @@ func (service CursoService) Update(ctx context.Context, curso domain.CursoData) 
 	}
 	if curso.Capacidad != 0 {
 		updateData["capacidad"] = curso.Capacidad
+	}
+	if curso.Profesor != "" {
+		updateData["profesor"] = curso.Profesor
+	}	
+
+	if curso.Requisito != "" {
+		updateData["requisito"] = curso.Requisito
+	}	
+
+
+	if curso.Duracion != 0 {
+		updateData["duracion"] = curso.Duracion
+	}	
+
+
+	if curso.Imagen != "" {
+		updateData["imagen"] = curso.Imagen
+	}	
+
+	if curso.Valoracion != 0 {
+		updateData["valoracion"] = curso.Valoracion
 	}
 
 	if len(updateData) == 0 {

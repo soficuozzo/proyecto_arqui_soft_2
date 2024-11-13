@@ -2,16 +2,15 @@ package services
 
 import (
 	"context"
-	"fmt"
-	cursosDAO "proyecto_arqui_soft_2/search-api/dao"       
+	"fmt"      
 	cursosDomain "proyecto_arqui_soft_2/search-api/domain" 
 )
 
 type Repository interface {
-	Index(ctx context.Context, curso cursosDAO.Curso) (string, error)
-	Update(ctx context.Context, curso cursosDAO.Curso) error
+	Index(ctx context.Context, curso cursosDomain.CursoData) (string, error)
+	Update(ctx context.Context, curso cursosDomain.CursoData) error
 	Delete(ctx context.Context, id string) error
-	Search(ctx context.Context, query string, limit int, offset int) ([]cursosDAO.Curso, error) // Actualización en la firma de la función
+	Search(ctx context.Context, query string, limit int, offset int) ([]cursosDomain.CursoData, error) 
 }
 
 type ExternalRepository interface {
@@ -46,6 +45,11 @@ func (service Service) Search(ctx context.Context, query string, offset int, lim
 			Descripcion: curso.Descripcion,
 			Categoria:   curso.Categoria,
 			Capacidad:   curso.Capacidad,
+			Imagen: 	curso.Imagen,
+			Valoracion:   curso.Valoracion,
+			Requisito:   curso.Requisito,
+			Profesor:   curso.Profesor,
+			Duracion: curso.Duracion,
 		})
 	}
 
@@ -63,12 +67,17 @@ func (service Service) HandleCursoNew(cursoNew cursosDomain.CursoNew) {
 		}
 
 		// Convierte los datos del dominio al formato del DAO
-		cursoDAO := cursosDAO.Curso{
+		cursoDAO := cursosDomain.CursoData{
 			CursoID:     cursoData.CursoID,
 			Nombre:      cursoData.Nombre,
 			Descripcion: cursoData.Descripcion,
 			Categoria:   cursoData.Categoria,
 			Capacidad:   cursoData.Capacidad,
+			Imagen: 	cursoData.Imagen,
+			Valoracion:   cursoData.Valoracion,
+			Requisito:   cursoData.Requisito,
+			Profesor:   cursoData.Profesor,
+			Duracion: cursoData.Duracion,
 		}
 
 		// Maneja la operación de Indexación

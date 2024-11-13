@@ -6,6 +6,7 @@ import (
 	"github.com/streadway/amqp"
 	"log"
 	cursos"proyecto_arqui_soft_2/search-api/domain"
+	"proyecto_arqui_soft_2/search-api/services"
 )
 
 type RabbitConfig struct {
@@ -41,7 +42,7 @@ func NewRabbit(config RabbitConfig) Rabbit {
 }
 
 // StartConsumer starts listening for messages on the RabbitMQ queue
-func (queue Rabbit) StartConsumer(handler func(cursos.CursoNew)) error {
+func (queue Rabbit) StartConsumer(service services.Service) error {
 	messages, err := queue.channel.Consume(
 		queue.queue.Name,
 		"",
@@ -57,13 +58,16 @@ func (queue Rabbit) StartConsumer(handler func(cursos.CursoNew)) error {
 
 	go func() {
 		for msg := range messages {
-			var cursoUpdate cursos.CursoNew
-			if err := json.Unmarshal(msg.Body, &cursoUpdate); err != nil {
+			var CursoNew cursos.CursoNew
+			if err := json.Unmarshal(msg.Body, &CursoNew); err != nil {
 				log.Printf("error unmarshaling message: %v", err)
 				continue
 			}
+			fmt.Println(CursoNew)
+			// Call the service method
+			service.HandleCursoNew(CursoNew)
 
-			handler(cursoUpdate)
+
 		}
 	}()
 

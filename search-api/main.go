@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"proyecto_arqui_soft_2/search-api/clients/queues"
+	"fmt"
 	controllers "proyecto_arqui_soft_2/search-api/controllers"
 	repositories "proyecto_arqui_soft_2/search-api/repositories"
 	services "proyecto_arqui_soft_2/search-api/services"
@@ -16,6 +17,7 @@ func main() {
 		Port:       "8983",   // Solr port
 		Collection: "cursos", // Collection name
 	})
+	fmt.Printf("Solr Base URL: http://%s:%s/solr/%s\n", "localhost", "8983", "cursos")
 
 	// Rabbit
 	eventsQueue := queues.NewRabbit(queues.RabbitConfig{
@@ -39,7 +41,7 @@ func main() {
 	controller := controllers.NewController(service)
 
 	// Launch rabbit consumer
-	if err := eventsQueue.StartConsumer(service.HandleCursoNew); err != nil {
+	if err := eventsQueue.StartConsumer(service); err != nil {
 		log.Fatalf("Error running consumer: %v", err)
 	}
 

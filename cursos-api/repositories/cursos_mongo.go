@@ -134,7 +134,12 @@ func (repository Mongo) GetCursosByIds(ctx context.Context, ids []string) ([]dom
 			Nombre      string             `bson:"nombre"`
 			Descripcion string             `bson:"descripcion"`
 			Categoria   string             `bson:"categoria"`
-			Capacidad   int64              `bson:"capacidad"`
+			Capacidad   int64             `bson:"capacidad"`
+			Requisito   string  `bson:"requisito"`
+			Duracion   int64  `bson:"duracion"`
+			Imagen   string  `bson:"imagen"`
+			Valoracion   int64  `bson:"valoracion"`
+			Profesor   string  `bson:"profesor"`
 		}
 
 		if err := cursor.Decode(&curso); err != nil {
@@ -149,6 +154,12 @@ func (repository Mongo) GetCursosByIds(ctx context.Context, ids []string) ([]dom
 			Descripcion: curso.Descripcion,
 			Categoria:   curso.Categoria,
 			Capacidad:   curso.Capacidad,
+			Requisito:	curso.Requisito,
+			Duracion: curso.Duracion,
+			Imagen: curso.Imagen,
+			Valoracion: curso.Valoracion,
+			Profesor: curso.Profesor,
+
 		}
 
 		cursos = append(cursos, cursoData)
