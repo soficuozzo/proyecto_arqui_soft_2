@@ -28,7 +28,7 @@ func main() {
 
 	// Cursos API
 	cursosAPI := repositories.NewHTTP(repositories.HTTPConfig{
-		Host: "cursos-api",
+		Host: "localhost",
 		Port: "8081",
 	})
 

@@ -5,11 +5,10 @@
         <field name="nombre" type="text_general" indexed="true" stored="true"/>
         <field name="descripcion" type="text_general" indexed="true" stored="true"/>
         <field name="categoria" type="text_general" indexed="true" stored="true"/>
-        <field name="capacidad" type="float" indexed="true" stored="true"/>
-        <field name="Imagen" type="text_general" indexed="true" stored="true"/>
+        <field name="capacidad" type="int" indexed="true" stored="true"/>
     </fields>
 
-    <uniqueKey>id</uniqueKey>
+    <uniqueKey>curso_id</uniqueKey>
 
     <defaultSearchField>nombre</defaultSearchField>
     <similarity class="solr.ClassicSimilarity"/>

@@ -36,7 +36,7 @@ func NewSolr(config SolrConfig) Solr {
 func (searchEngine Solr) Index(ctx context.Context, curso cursos.Curso) (string, error) {
 	// Prepare the document for Solr
 	doc := map[string]interface{}{
-		"_id": 	  curso.CursoID,
+		"curso_id": 	  curso.CursoID,
 		"nombre": curso.Nombre,
 		"descripcion": curso.Descripcion,
 		"categoria": curso.Categoria,
@@ -75,7 +75,7 @@ func (searchEngine Solr) Index(ctx context.Context, curso cursos.Curso) (string,
 func (searchEngine Solr) Update(ctx context.Context, curso cursos.Curso) error {
 	// Prepare the document for Solr
 	doc := map[string]interface{}{
-		"_id": 	  curso.CursoID,
+		"curso_id": 	  curso.CursoID,
 		"nombre": curso.Nombre,
 		"descripcion": curso.Descripcion,
 		"categoria": curso.Categoria,
@@ -161,7 +161,7 @@ func (searchEngine Solr) Search(ctx context.Context, query string, limit int, of
 
 		// Safely extract curso fields with type assertions
 		cursos := cursos.Curso{
-			CursoID:        getStringField(doc, "_id"),
+			CursoID:        getStringField(doc, "curso_id"),
 			Nombre:      getStringField(doc, "nombre"),
 			Descripcion:   getStringField(doc, "descripcion"),
 			Categoria:      getStringField(doc, "categoria"),

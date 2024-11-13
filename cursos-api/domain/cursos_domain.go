@@ -6,5 +6,8 @@ type CursoData struct {
 	Descripcion string `json:"descripcion"`
 	Categoria   string `json:"categoria"`
 	Capacidad   int64  `json:"capacidad"`
-	Imagen      string `json:"imagen,omitempty"`
+}
+type CursoNew struct {
+	Operation string `json:"operation"`
+	CursoID string `json:"curso_id"`
 }

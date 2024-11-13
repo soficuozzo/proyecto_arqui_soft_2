@@ -3,8 +3,8 @@ package services
 import (
 	"context"
 	"fmt"
-	cursosDAO "proyecto_arqui_soft_2/search-api/dao"       // Paquete DAO para acceder a la estructura de la base de datos
-	cursosDomain "proyecto_arqui_soft_2/search-api/domain" // Paquete Domain para el modelo de datos
+	cursosDAO "proyecto_arqui_soft_2/search-api/dao"       
+	cursosDomain "proyecto_arqui_soft_2/search-api/domain" 
 )
 
 type Repository interface {
@@ -78,7 +78,7 @@ func (service Service) HandleCursoNew(cursoNew cursosDomain.CursoNew) {
 			} else {
 				fmt.Println("Curso indexed successfully:", cursoNew.CursoID)
 			}
-		} else { // Maneja la operación de actualización
+		} else { 
 			if err := service.repository.Update(context.Background(), cursoDAO); err != nil {
 				fmt.Printf("Error updating curso (%s): %v\n", cursoNew.CursoID, err)
 			} else {
@@ -87,7 +87,7 @@ func (service Service) HandleCursoNew(cursoNew cursosDomain.CursoNew) {
 		}
 
 	case "DELETE":
-		// Llama directamente al método Delete ya que no se necesitan detalles del curso
+		
 		if err := service.repository.Delete(context.Background(), cursoNew.CursoID); err != nil {
 			fmt.Printf("Error deleting curso (%s): %v\n", cursoNew.CursoID, err)
 		} else {
