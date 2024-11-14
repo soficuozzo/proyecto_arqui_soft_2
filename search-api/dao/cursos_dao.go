@@ -1,15 +1,13 @@
 package dao
 type Curso struct {
-	CursoID     string `bson:"_id,omitempty"`
-	Nombre      string `bson:"nombre"`
-	Descripcion string `bson:"descripcion"`
-	Categoria   string `bson:"categoria"`
-	Capacidad   int64  `bson:"capacidad"`
-	Requisito   string  `bson:"requisito"`
-	Duracion   int64  `bson:"duracion"`
-	Imagen   string  `bson:"imagen"`
-	Valoracion   int64  `bson:"valoracion"`
-	Profesor   string  `bson:"profesor"`
+	CursoID     string `json:"_id"`
+	Nombre      string `json:"nombre"`
+	Descripcion string `json:"descripcion"`
+	Categoria   string `json:"categoria"`
+	Capacidad   int64  `json:"capacidad"`
+	Requisito   string  `json:"requisito"`
+	Duracion   int64  `json:"duracion"`
+	Imagen   string  `json:"imagen"`
+	Valoracion   int64  `json:"valoracion"`
+	Profesor   string  `json:"profesor"`
 }
-
-type CursosData []Curso

@@ -3,14 +3,15 @@ package services
 import (
 	"context"
 	"fmt"      
-	cursosDomain "proyecto_arqui_soft_2/search-api/domain" 
+	cursosDomain "proyecto_arqui_soft_2/search-api/domain"
+	cursosDAO "proyecto_arqui_soft_2/search-api/dao" 
 )
 
 type Repository interface {
-	Index(ctx context.Context, curso cursosDomain.CursoData) (string, error)
-	Update(ctx context.Context, curso cursosDomain.CursoData) error
+	Index(ctx context.Context, curso cursosDAO.Curso) (string, error)
+	Update(ctx context.Context, curso cursosDAO.Curso) error
 	Delete(ctx context.Context, id string) error
-	Search(ctx context.Context, query string, limit int, offset int) ([]cursosDomain.CursoData, error) 
+	Search(ctx context.Context, query string, limit int, offset int) ([]cursosDAO.Curso, error) 
 }
 
 type ExternalRepository interface {
@@ -31,14 +32,14 @@ func NewService(repository Repository, cursosAPI ExternalRepository) Service {
 
 func (service Service) Search(ctx context.Context, query string, offset int, limit int) ([]cursosDomain.CursoData, error) {
 	// Llama al método Search del repositorio
-	cursosList, err := service.repository.Search(ctx, query, limit, offset)
+	cursosDAOList, err := service.repository.Search(ctx, query, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("error searching cursos: %w", err)
 	}
 
 	// Convierte los cursos del DAO al dominio
 	cursosDomainList := make([]cursosDomain.CursoData, 0)
-	for _, curso := range cursosList {
+	for _, curso := range cursosDAOList {
 		cursosDomainList = append(cursosDomainList, cursosDomain.CursoData{
 			CursoID:     curso.CursoID,
 			Nombre:      curso.Nombre,
@@ -67,7 +68,7 @@ func (service Service) HandleCursoNew(cursoNew cursosDomain.CursoNew) {
 		}
 
 		// Convierte los datos del dominio al formato del DAO
-		cursoDAO := cursosDomain.CursoData{
+		cursoDAO := cursosDAO.Curso{
 			CursoID:     cursoData.CursoID,
 			Nombre:      cursoData.Nombre,
 			Descripcion: cursoData.Descripcion,

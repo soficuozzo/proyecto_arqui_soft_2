@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/stevenferrer/solr-go"
-	cursosDomain "proyecto_arqui_soft_2/search-api/domain"
+	cursosDAO "proyecto_arqui_soft_2/search-api/dao"
 )
 
 type SolrConfig struct {
@@ -18,27 +18,25 @@ type SolrConfig struct {
 type Solr struct {
 	Client     *solr.JSONClient
 	Collection string
-	BaseURL    string
 }
 
 // NewSolr initializes a new Solr client
 func NewSolr(config SolrConfig) Solr {
 	// Construct the BaseURL using the provided host and port
-    baseURL := fmt.Sprintf("http://%s:%s/solr/%s", config.Host, config.Port, config.Collection)
-    client := solr.NewJSONClient(baseURL)
+	baseURL := fmt.Sprintf("http://%s:%s", config.Host, config.Port)
+	client := solr.NewJSONClient(baseURL)
 
 	return Solr{
 		Client:     client,
 		Collection: config.Collection,
-		BaseURL:    baseURL,
 	}
 }
 
 // Index adds a new cursos document to the Solr collection
-func (searchEngine Solr) Index(ctx context.Context, curso cursosDomain.CursoData) (string, error) {
+func (searchEngine Solr) Index(ctx context.Context, curso cursosDAO.Curso) (string, error) {
 	// Prepare the document for Solr
 	doc := map[string]interface{}{
-		"curso_id": 	  curso.CursoID,
+		"_id": 	  curso.CursoID,
 		"nombre": curso.Nombre,
 		"descripcion": curso.Descripcion,
 		"categoria": curso.Categoria,
@@ -52,7 +50,7 @@ func (searchEngine Solr) Index(ctx context.Context, curso cursosDomain.CursoData
 
 	// Prepare the index request
 	indexRequest := map[string]interface{}{
-		"add": []interface{}{doc}, // Use "add" with a list of documents
+		"add": []interface{}{doc}, 
 	}
 
 	// Index the document in Solr
@@ -60,8 +58,6 @@ func (searchEngine Solr) Index(ctx context.Context, curso cursosDomain.CursoData
 	if err != nil {
 		return "", fmt.Errorf("error marshaling curso document: %w", err)
 	}
-		// Log the URL being used for indexing
-		fmt.Printf("Indexing URL: %s/update\n", searchEngine.BaseURL)
 
 	// Index the document in Solr
 	resp, err := searchEngine.Client.Update(ctx, searchEngine.Collection, solr.JSON, bytes.NewReader(body))
@@ -81,10 +77,10 @@ func (searchEngine Solr) Index(ctx context.Context, curso cursosDomain.CursoData
 }
 
 // Update modifies an existing curso document in the Solr collection
-func (searchEngine Solr) Update(ctx context.Context, curso cursosDomain.CursoData) error {
+func (searchEngine Solr) Update(ctx context.Context, curso cursosDAO.Curso) error {
 	// Prepare the document for Solr
 	doc := map[string]interface{}{
-		"curso_id": 	  curso.CursoID,
+		"_id": 	  curso.CursoID,
 		"nombre": curso.Nombre,
 		"descripcion": curso.Descripcion,
 		"categoria": curso.Categoria,
@@ -155,10 +151,9 @@ func (searchEngine Solr) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func (searchEngine Solr) Search(ctx context.Context, query string, limit int, offset int) ([]cursosDomain.CursoData, error) {
+func (searchEngine Solr) Search(ctx context.Context, query string, limit int, offset int) ([]cursosDAO.Curso, error) {
 	// Prepare the Solr query with limit and offset
-	solrQuery := fmt.Sprintf("q=(nombre:%s)&rows=%d&start=%d", query, limit, offset)
-	fmt.Printf("Searching URL: %s/select?%s\n", searchEngine.BaseURL, solrQuery)
+	solrQuery := fmt.Sprintf("q=(name:%s)&rows=%d&start=%d", query, limit, offset)
 
 	// Execute the search request
 	resp, err := searchEngine.Client.Query(ctx, searchEngine.Collection, solr.NewQuery(solrQuery))
@@ -170,13 +165,13 @@ func (searchEngine Solr) Search(ctx context.Context, query string, limit int, of
 	}
 
 	// Parse the response and extract curso documents
-	var cursosList []cursosDomain.CursoData
+	var cursosList []cursosDAO.Curso
 	for _, doc := range resp.Response.Documents {
 	
 
 		// Safely extract curso fields with type assertions
-		cursos := cursosDomain.CursoData{
-			CursoID:        getStringField(doc, "curso_id"),
+		cursos := cursosDAO.Curso{
+			CursoID:        getStringField(doc, "_id"),
 			Nombre:      getStringField(doc, "nombre"),
 			Descripcion:   getStringField(doc, "descripcion"),
 			Categoria:      getStringField(doc, "categoria"),

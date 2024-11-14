@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"proyecto_arqui_soft_2/search-api/clients/queues"
-	"fmt"
 	controllers "proyecto_arqui_soft_2/search-api/controllers"
 	repositories "proyecto_arqui_soft_2/search-api/repositories"
 	services "proyecto_arqui_soft_2/search-api/services"
@@ -15,9 +14,8 @@ func main() {
 	solrRepo := repositories.NewSolr(repositories.SolrConfig{
 		Host:       "localhost",   // Solr host
 		Port:       "8983",   // Solr port
-		Collection: "cursos", // Collection name
+		Collection: "curso", // Collection name
 	})
-	fmt.Printf("Solr Base URL: http://%s:%s/solr/%s\n", "localhost", "8983", "cursos")
 
 	// Rabbit
 	eventsQueue := queues.NewRabbit(queues.RabbitConfig{
