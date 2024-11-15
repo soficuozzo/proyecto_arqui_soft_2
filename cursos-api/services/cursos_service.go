@@ -197,7 +197,6 @@ func (service CursoService) Create(ctx context.Context, curso domain.CursoData) 
 		Imagen:      curso.Imagen,
 		Valoracion:  curso.Valoracion,
 		Profesor:     curso.Profesor,
-
 	}
 
 	id, err := service.mainRepository.Create(ctx, cursoDAO)
@@ -251,9 +250,33 @@ func (service CursoService) Update(ctx context.Context, curso domain.CursoData) 
 		updateData["valoracion"] = curso.Valoracion
 	}
 
+	if curso.Profesor != "" {
+		updateData["profesor"] = curso.Profesor
+	}	
+
+	if curso.Requisito != "" {
+		updateData["requisito"] = curso.Requisito
+	}	
+
+
+	if curso.Duracion != 0 {
+		updateData["duracion"] = curso.Duracion
+	}	
+
+
+	if curso.Imagen != "" {
+		updateData["imagen"] = curso.Imagen
+	}	
+
+	if curso.Valoracion != 0 {
+		updateData["valoracion"] = curso.Valoracion
+	}	
+
+
 	if len(updateData) == 0 {
 		return fmt.Errorf("no hay campos para actualizar")
 	}
+
 
 	err := service.mainRepository.Update(ctx, curso.CursoID, updateData) // Se queda igual
 	if err != nil {
