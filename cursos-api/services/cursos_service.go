@@ -34,13 +34,19 @@ type Repository interface {
 type CursoService struct {
 	mainRepository        Repository
 	inscripcionRepository Repository
+	eventsQueue           Queue
+}
+type Queue interface {
+	Publish(CursoNew domain.CursoNew) error
 }
 
+
 // Constructor para CursoService
-func NewCursoService(mainRepository, inscripcionRepository Repository) CursoService {
+func NewCursoService(mainRepository, inscripcionRepository Repository, eventsQueue Queue) CursoService {
 	return CursoService{
 		mainRepository:        mainRepository,
 		inscripcionRepository: inscripcionRepository,
+		eventsQueue:           eventsQueue,
 	}
 }
 
@@ -197,6 +203,13 @@ func (service CursoService) Create(ctx context.Context, curso domain.CursoData) 
 	if err != nil {
 		return "", fmt.Errorf("error creando curso: %w", err)
 	}
+	if err := service.eventsQueue.Publish(domain.CursoNew{
+		Operation: "CREATE",
+		CursoID:   id,
+	}); err != nil {
+		return "", fmt.Errorf("error publishing curso new: %w", err)
+	}
+
 
 	return id, nil
 }
@@ -214,6 +227,27 @@ func (service CursoService) Update(ctx context.Context, curso domain.CursoData) 
 	}
 	if curso.Capacidad != 0 {
 		updateData["capacidad"] = curso.Capacidad
+	}
+	if curso.Profesor != "" {
+		updateData["profesor"] = curso.Profesor
+	}	
+
+	if curso.Requisito != "" {
+		updateData["requisito"] = curso.Requisito
+	}	
+
+
+	if curso.Duracion != 0 {
+		updateData["duracion"] = curso.Duracion
+	}	
+
+
+	if curso.Imagen != "" {
+		updateData["imagen"] = curso.Imagen
+	}	
+
+	if curso.Valoracion != 0 {
+		updateData["valoracion"] = curso.Valoracion
 	}
 
 	if curso.Profesor != "" {
@@ -248,6 +282,12 @@ func (service CursoService) Update(ctx context.Context, curso domain.CursoData) 
 	if err != nil {
 		return fmt.Errorf("error actualizando curso: %w", err)
 	}
+	if err := service.eventsQueue.Publish(domain.CursoNew{
+		Operation: "UPDATE",
+		CursoID:   curso.CursoID,
+	}); err != nil {
+		return fmt.Errorf("error publishing curso update: %w", err)
+	}
 
 	return nil
 }
@@ -256,6 +296,12 @@ func (service CursoService) Delete(ctx context.Context, id string) error {
 	err := service.mainRepository.Delete(ctx, id)
 	if err != nil {
 		return fmt.Errorf("error eliminando curso: %w", err)
+	}
+	if err := service.eventsQueue.Publish(domain.CursoNew{
+		Operation: "DELETE",
+		CursoID:   id,
+	}); err != nil {
+		return fmt.Errorf("error publishing curso delete: %w", err)
 	}
 	return nil
 }

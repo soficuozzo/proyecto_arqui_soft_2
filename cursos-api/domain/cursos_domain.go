@@ -12,3 +12,7 @@ type CursoData struct {
 	Profesor   string  `json:"profesor"`
 	Duracion int64  `json:"duracion"`
 }
+type CursoNew struct {
+	Operation string `json:"operation"`
+	CursoID string `json:"curso_id"`
+}

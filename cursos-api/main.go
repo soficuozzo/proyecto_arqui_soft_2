@@ -1,60 +1,70 @@
 package main
 
 import (
-	"context"
-	"log"
+    "context"
+    "log"
+    "proyecto_arqui_soft_2/cursos-api/controllers"
+    "proyecto_arqui_soft_2/cursos-api/repositories"
+    "proyecto_arqui_soft_2/cursos-api/services"
+    "proyecto_arqui_soft_2/cursos-api/clients" 
 
-	"proyecto_arqui_soft_2/cursos-api/controllers"
-	"proyecto_arqui_soft_2/cursos-api/repositories"
-	"proyecto_arqui_soft_2/cursos-api/services"
-
-	"github.com/gin-gonic/gin"
+    "github.com/gin-gonic/gin"
 )
 
 func main() {
-	// Configuración del repositorio principal
-	mainRepository := repositories.NewMongo(repositories.MongoConfig{
-		Host:       "localhost",
-		Port:       "27017",
-		Username:   "root",
-		Password:   "root",
-		Database:   "cursos_db",
-		Collection: "cursos",
-	})
+    // Configuración del repositorio principal
+    mainRepository := repositories.NewMongo(repositories.MongoConfig{
+        Host:       "localhost",
+        Port:       "27017",
+        Username:   "sofia",
+        Password:   "1234",
+        Database:   "cursos_db",
+        Collection: "cursos",
+    })
 
-	InscripcionRepository := repositories.NewMySQL(
-		repositories.MySQLConfig{
-			Host:     "127.0.0.1",
-			Port:     "3306",
-			Database: "users-api",
-			Username: "root",
-			Password: "root1234",
-		},
-	)
+    InscripcionRepository := repositories.NewMySQL(
+        repositories.MySQLConfig{
+            Host:     "127.0.0.1",
+            Port:     "3306",
+            Database: "users-api",
+            Username: "root",
+            Password: "root",
+        },
+    )
 
-	// Prueba de conexión a MongoDB
-	ctx := context.Background()
-	if err := mainRepository.TestConnection(ctx); err != nil {
-		log.Fatalf("Conexión a MongoDB fallida: %v", err)
-	} else {
-		log.Println("¡Conexión a MongoDB exitosa!")
-	}
+    eventsQueue := clients.NewRabbit(clients.RabbitConfig{
+        Host:      "localhost",
+        Port:      "5672",
+        Username:  "user",
+        Password:  "password",
+        QueueName: "cursos-news",
+    })
 
-	cursoService := services.NewCursoService(mainRepository, InscripcionRepository)
+    // Prueba de conexión a MongoDB
+    ctx := context.Background()
+    if err := mainRepository.TestConnection(ctx); err != nil {
+        log.Fatalf("Conexión a MongoDB fallida: %v", err)
+    } else {
+        log.Println("¡Conexión a MongoDB exitosa!")
+    }
 
-	// Creación del controlador de cursos
-	cursoController := controllers.NewCursoController(cursoService)
+    // Crear servicio de cursos pasando el repositorio principal, el de inscripciones y la cola de eventos
+    cursoService := services.NewCursoService(mainRepository, InscripcionRepository, eventsQueue)
 
-	// Configuración de rutas
-	router := gin.Default()
-	router.GET("/cursos/:id", cursoController.GetCursoByID)
-	router.POST("/cursos", cursoController.Create)
-	router.PUT("/cursos/:id", cursoController.Update)
-	router.DELETE("/cursos/:id", cursoController.Delete)
-	router.POST("/inscripcion", cursoController.CrearInscripcion)
-	router.GET("/usuario/miscursos/:id", cursoController.GetInscripcionByUserId)
-	// Inicia el servidor en el puerto 8081
-	if err := router.Run(":8081"); err != nil {
-		log.Fatalf("Error al iniciar el servidor: %v", err)
-	}
+    // Creación del controlador de cursos
+    cursoController := controllers.NewCursoController(cursoService)
+
+    // Configuración de rutas
+    router := gin.Default()
+    router.GET("/cursos/:id", cursoController.GetCursoByID)
+    router.POST("/cursos", cursoController.Create)
+    router.PUT("/cursos/:id", cursoController.Update)
+    router.DELETE("/cursos/:id", cursoController.Delete)
+    router.POST("/inscripcion", cursoController.CrearInscripcion)
+    router.GET("/usuario/miscursos/:id", cursoController.GetInscripcionByUserId)
+
+    // Inicia el servidor en el puerto 8081
+    if err := router.Run(":8081"); err != nil {
+        log.Fatalf("Error al iniciar el servidor: %v", err)
+    }
 }
