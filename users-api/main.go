@@ -7,6 +7,8 @@ import (
 	services "proyecto_arqui_soft_2/users-api/services"
 	"time"
 
+	"github.com/gin-contrib/cors"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +20,7 @@ func main() {
 			Port:     "3306",
 			Database: "users-api",
 			Username: "root",
-			Password: "root",
+			Password: "root1234",
 		},
 	)
 
@@ -42,6 +44,13 @@ func main() {
 	// Create router
 	router := gin.Default()
 
+	// Configurar CORS
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowCredentials = true
+	config.AddAllowHeaders("Authorization")
+	router.Use(cors.New(config))
+
 	// URL mappings
 	router.GET("/users/:id", controlleruser.GetUsuariobyID)
 	router.GET("/users/email/:email", controlleruser.GetUsuariobyEmail)
@@ -49,7 +58,7 @@ func main() {
 	router.POST("/login", controlleruser.Login)
 
 	// Run application
-	if err := router.Run(":8080"); err != nil {
+	if err := router.Run(":8081"); err != nil {
 		log.Panicf("Error running application: %v", err)
 	}
 

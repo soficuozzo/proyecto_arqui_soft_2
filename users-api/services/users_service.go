@@ -141,9 +141,11 @@ func (service Service) Login(email string, password string) (string, error) {
 
 		return token, error
 
+	} else {
+		return "", fmt.Errorf("Hubo un error al buscar el usuario en la Base de Datos.")
+
 	}
 
-	return token, error
 }
 
 func (service Service) GetUsuariobyEmail(email string) (domain.UsuarioData, error) {
@@ -183,13 +185,13 @@ func (service Service) GetUsuariobyEmail(email string) (domain.UsuarioData, erro
 		// actualizar memcache
 		service.memcachedRepository.Actualizar(result)
 
-		return result, nil
+		usuarioencontrado := Usuario(usuarioo)
 
+		return usuarioencontrado, nil
+	} else {
+		return domain.UsuarioData{}, fmt.Errorf("error getting user by username: %w", err)
 	}
 
-	usuarioencontrado := Usuario(usuarioo)
-
-	return usuarioencontrado, nil
 }
 
 func (service Service) CrearUsuario(newusuario domain.UsuarioData) (domain.UsuarioData, error) {
@@ -260,11 +262,12 @@ func (service Service) GetUsuariobyID(id int64) (domain.UsuarioData, error) {
 		// actualizar memcache
 		service.memcachedRepository.Actualizar(result)
 
-		return result, nil
+		usuarioencontrado := Usuario(usuarioo)
 
+		return usuarioencontrado, nil
+
+	} else {
+		return domain.UsuarioData{}, fmt.Errorf("error getting user by username: %w", err)
 	}
 
-	usuarioencontrado := Usuario(usuarioo)
-
-	return usuarioencontrado, nil
 }

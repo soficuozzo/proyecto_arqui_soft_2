@@ -134,12 +134,12 @@ func (repository Mongo) GetCursosByIds(ctx context.Context, ids []string) ([]dom
 			Nombre      string             `bson:"nombre"`
 			Descripcion string             `bson:"descripcion"`
 			Categoria   string             `bson:"categoria"`
-			Capacidad   int64             `bson:"capacidad"`
-			Requisito   string  `bson:"requisito"`
-			Duracion   int64  `bson:"duracion"`
-			Imagen   string  `bson:"imagen"`
-			Valoracion   int64  `bson:"valoracion"`
-			Profesor   string  `bson:"profesor"`
+			Capacidad   int64              `bson:"capacidad"`
+			Requisito   string             `bson:"requisito"`
+			Duracion    int64              `bson:"duracion"`
+			Imagen      string             `bson:"imagen"`
+			Valoracion  int64              `bson:"valoracion"`
+			Profesor    string             `bson:"profesor"`
 		}
 
 		if err := cursor.Decode(&curso); err != nil {
@@ -154,12 +154,11 @@ func (repository Mongo) GetCursosByIds(ctx context.Context, ids []string) ([]dom
 			Descripcion: curso.Descripcion,
 			Categoria:   curso.Categoria,
 			Capacidad:   curso.Capacidad,
-			Requisito:	curso.Requisito,
-			Duracion: curso.Duracion,
-			Imagen: curso.Imagen,
-			Valoracion: curso.Valoracion,
-			Profesor: curso.Profesor,
-
+			Requisito:   curso.Requisito,
+			Duracion:    curso.Duracion,
+			Imagen:      curso.Imagen,
+			Valoracion:  curso.Valoracion,
+			Profesor:    curso.Profesor,
 		}
 
 		cursos = append(cursos, cursoData)
@@ -250,4 +249,60 @@ func (repo *CursosRepositoryImpl) ObtenerCursoPorID(cursoID string) (dao.Curso, 
 func (repo *CursosRepositoryImpl) ActualizarCurso(curso dao.Curso) error {
 	// Simulamos la actualización exitosa del curso en la base de datos
 	return nil
+}
+
+func (repository Mongo) GetAllCursos(ctx context.Context) ([]domain.CursoData, error) {
+	// Crear un filtro vacío para obtener todos los cursos
+	filter := bson.D{} // Este filtro selecciona todos los documentos
+
+	// Ejecutar la consulta para obtener todos los documentos
+	cursor, err := repository.client.Database(repository.database).
+		Collection(repository.collection).Find(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("error finding documents: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	// Decodificar los resultados
+	var cursos []domain.CursoData
+	for cursor.Next(ctx) {
+		var curso struct {
+			CursoID     primitive.ObjectID `bson:"_id"`
+			Nombre      string             `bson:"nombre"`
+			Descripcion string             `bson:"descripcion"`
+			Categoria   string             `bson:"categoria"`
+			Capacidad   int64              `bson:"capacidad"`
+			Requisito   string             `bson:"requisito"`
+			Duracion    int64              `bson:"duracion"`
+			Imagen      string             `bson:"imagen"`
+			Valoracion  int64              `bson:"valoracion"`
+			Profesor    string             `bson:"profesor"`
+		}
+
+		if err := cursor.Decode(&curso); err != nil {
+			return nil, fmt.Errorf("error decoding result: %w", err)
+		}
+
+		// Convertir el ObjectID a string para el dominio
+		cursoData := domain.CursoData{
+			CursoID:     curso.CursoID.Hex(), // Convertimos el ObjectID a string
+			Nombre:      curso.Nombre,
+			Descripcion: curso.Descripcion,
+			Categoria:   curso.Categoria,
+			Capacidad:   curso.Capacidad,
+			Requisito:   curso.Requisito,
+			Duracion:    curso.Duracion,
+			Imagen:      curso.Imagen,
+			Valoracion:  curso.Valoracion,
+			Profesor:    curso.Profesor,
+		}
+
+		cursos = append(cursos, cursoData)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("cursor error: %w", err)
+	}
+
+	return cursos, nil
 }

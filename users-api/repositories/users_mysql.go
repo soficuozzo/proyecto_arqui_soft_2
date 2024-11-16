@@ -63,6 +63,7 @@ func (repository MySQL) GetUsuariobyEmail(email string) (dao.Usuario, error) {
 	result := repository.db.Where("email = ?", email).First(&usuario)
 	if result.Error != nil {
 		return usuario, result.Error
+
 	}
 
 	return usuario, nil

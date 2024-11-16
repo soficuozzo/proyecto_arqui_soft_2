@@ -186,3 +186,19 @@ func (controller CursoController) Delete(c *gin.Context) {
 		"message": "Curso eliminado",
 	})
 }
+
+// lo agregue para TODOS los cursos
+func (controller CursoController) GetAllCursos(c *gin.Context) {
+
+	cursoData, er := controller.service.GetAllCursos(c.Request.Context())
+
+	if er != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": fmt.Sprintf("error eliminando curso: %s", er.Error()),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, cursoData)
+
+}

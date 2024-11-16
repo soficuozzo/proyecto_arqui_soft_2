@@ -1,70 +1,83 @@
 package main
 
 import (
-    "context"
-    "log"
-    "proyecto_arqui_soft_2/cursos-api/controllers"
-    "proyecto_arqui_soft_2/cursos-api/repositories"
-    "proyecto_arqui_soft_2/cursos-api/services"
-    "proyecto_arqui_soft_2/cursos-api/clients" 
+	"context"
+	"log"
+	"proyecto_arqui_soft_2/cursos-api/clients"
+	"proyecto_arqui_soft_2/cursos-api/controllers"
+	"proyecto_arqui_soft_2/cursos-api/repositories"
+	"proyecto_arqui_soft_2/cursos-api/services"
 
-    "github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-    // Configuración del repositorio principal
-    mainRepository := repositories.NewMongo(repositories.MongoConfig{
-        Host:       "localhost",
-        Port:       "27017",
-        Username:   "sofia",
-        Password:   "1234",
-        Database:   "cursos_db",
-        Collection: "cursos",
-    })
+	// Configuración del repositorio principal
+	mainRepository := repositories.NewMongo(repositories.MongoConfig{
+		Host:       "localhost",
+		Port:       "27017",
+		Username:   "root",
+		Password:   "root",
+		Database:   "cursos_db",
+		Collection: "cursos",
+	})
 
-    InscripcionRepository := repositories.NewMySQL(
-        repositories.MySQLConfig{
-            Host:     "127.0.0.1",
-            Port:     "3306",
-            Database: "users-api",
-            Username: "root",
-            Password: "root",
-        },
-    )
+	InscripcionRepository := repositories.NewMySQL(
+		repositories.MySQLConfig{
+			Host:     "127.0.0.1",
+			Port:     "3306",
+			Database: "users-api",
+			Username: "root",
+			Password: "root1234",
+		},
+	)
 
-    eventsQueue := clients.NewRabbit(clients.RabbitConfig{
-        Host:      "localhost",
-        Port:      "5672",
-        Username:  "user",
-        Password:  "password",
-        QueueName: "cursos-news",
-    })
+	eventsQueue := clients.NewRabbit(clients.RabbitConfig{
+		Host:      "localhost",
+		Port:      "5672",
+		Username:  "user",
+		Password:  "password",
+		QueueName: "cursos-news",
+	})
 
-    // Prueba de conexión a MongoDB
-    ctx := context.Background()
-    if err := mainRepository.TestConnection(ctx); err != nil {
-        log.Fatalf("Conexión a MongoDB fallida: %v", err)
-    } else {
-        log.Println("¡Conexión a MongoDB exitosa!")
-    }
+	// Prueba de conexión a MongoDB
+	ctx := context.Background()
+	if err := mainRepository.TestConnection(ctx); err != nil {
+		log.Fatalf("Conexión a MongoDB fallida: %v", err)
+	} else {
+		log.Println("¡Conexión a MongoDB exitosa!")
+	}
 
-    // Crear servicio de cursos pasando el repositorio principal, el de inscripciones y la cola de eventos
-    cursoService := services.NewCursoService(mainRepository, InscripcionRepository, eventsQueue)
+	// Crear servicio de cursos pasando el repositorio principal, el de inscripciones y la cola de eventos
+	cursoService := services.NewCursoService(mainRepository, InscripcionRepository, eventsQueue)
 
-    // Creación del controlador de cursos
-    cursoController := controllers.NewCursoController(cursoService)
+	// Creación del controlador de cursos
+	cursoController := controllers.NewCursoController(cursoService)
 
-    // Configuración de rutas
-    router := gin.Default()
-    router.GET("/cursos/:id", cursoController.GetCursoByID)
-    router.POST("/cursos", cursoController.Create)
-    router.PUT("/cursos/:id", cursoController.Update)
-    router.DELETE("/cursos/:id", cursoController.Delete)
-    router.POST("/inscripcion", cursoController.CrearInscripcion)
-    router.GET("/usuario/miscursos/:id", cursoController.GetInscripcionByUserId)
+	// Configuración de rutas
+	router := gin.Default()
 
-    // Inicia el servidor en el puerto 8081
-    if err := router.Run(":8081"); err != nil {
-        log.Fatalf("Error al iniciar el servidor: %v", err)
-    }
+	// Configurar CORS (Permitir todos los orígenes)
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowCredentials = true
+	config.AddAllowHeaders("Authorization")
+	router.Use(cors.New(config))
+
+	router.GET("/cursos/:id", cursoController.GetCursoByID)
+	router.POST("/cursos/create", cursoController.Create)
+	router.PUT("/cursos/update/:id", cursoController.Update)
+	router.DELETE("/cursos/delete/:id", cursoController.Delete)
+	router.POST("/inscripcion", cursoController.CrearInscripcion)
+	router.GET("/usuario/miscursos/:id", cursoController.GetInscripcionByUserId)
+
+	//lo agregue para TODOS los cursos
+	router.GET("/cursos/todos", cursoController.GetAllCursos)
+
+	// Inicia el servidor en el puerto 8081
+	if err := router.Run(":8082"); err != nil {
+		log.Fatalf("Error al iniciar el servidor: %v", err)
+	}
 }

@@ -1,20 +1,22 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"log"
 	"proyecto_arqui_soft_2/search-api/clients/queues"
 	controllers "proyecto_arqui_soft_2/search-api/controllers"
 	repositories "proyecto_arqui_soft_2/search-api/repositories"
 	services "proyecto_arqui_soft_2/search-api/services"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	// Solr
 	solrRepo := repositories.NewSolr(repositories.SolrConfig{
-		Host:       "localhost",   // Solr host
-		Port:       "8983",   // Solr port
-		Collection: "curso", // Collection name
+		Host:       "localhost", // Solr host
+		Port:       "8983",      // Solr port
+		Collection: "curso",     // Collection name
 	})
 
 	// Rabbit
@@ -29,7 +31,7 @@ func main() {
 	// Cursos API
 	cursosAPI := repositories.NewHTTP(repositories.HTTPConfig{
 		Host: "localhost",
-		Port: "8081",
+		Port: "8082",
 	})
 
 	// Services
@@ -45,8 +47,17 @@ func main() {
 
 	// Create router
 	router := gin.Default()
+
+	// Configurar CORS (Permitir todos los orígenes)
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowCredentials = true
+	config.AddAllowHeaders("Authorization")
+	router.Use(cors.New(config))
+
 	router.GET("/search", controller.Search)
-	if err := router.Run(":8082"); err != nil {
+
+	if err := router.Run(":8083"); err != nil {
 		log.Fatalf("Error running application: %v", err)
 	}
 }
