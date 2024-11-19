@@ -44,7 +44,7 @@ func main() {
 	// Create router
 	router := gin.Default()
 
-	// Configurar CORS
+	// Configurar CORS (Permitir todos los orígenes)
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowCredentials = true

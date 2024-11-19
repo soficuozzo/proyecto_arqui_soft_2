@@ -115,7 +115,8 @@ const Curso = () => {
                     <p><b>Categoria:</b> {curso.categoria}</p>
                     <p><b>Profesor:</b> {curso.profesor}</p>
                     <p><b>Duracion:</b> {curso.duracion}</p>
-                    <p><b>Requisitos:</b> {curso.requisitos}</p> 
+                    <p><b>Requisitos:</b> {curso.requisito}</p>
+                    <p><b>Capacidad:</b> {curso.capacidad}</p> 
                     
                     {mostrar() && (
                         <>
