@@ -125,6 +125,21 @@ func (controller CursoController) GetCursoByID(c *gin.Context) {
 	c.JSON(http.StatusOK, curso)
 }
 
+// Endpoint para obtener un curso por ID
+func (controller CursoController) GetCursoByName(c *gin.Context) {
+	cursoNombre := strings.TrimSpace(c.Param("name"))
+
+	curso, err := controller.service.GetCursoByName(c.Request.Context(), cursoNombre)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": fmt.Sprintf("error obteniendo curso: %s", err.Error()),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, curso)
+}
+
 // Endpoint para crear un curso
 func (controller CursoController) Create(c *gin.Context) {
 	var curso domain.CursoData

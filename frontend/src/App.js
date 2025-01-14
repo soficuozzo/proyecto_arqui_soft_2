@@ -10,6 +10,7 @@ import Registrarse from './paginas/registrarse';
 import MisCursos from './paginas/miscursos';
 import CerrarSesion from './paginas/cerrarsesion';
 import CursoNuevo from './paginas/cursonuevo';
+import UpdateCurso from './paginas/updatecurso';
 
 
 import { useState } from 'react';
@@ -31,6 +32,7 @@ function App() {
           <Route exact path="/miscursos" element={<MisCursos />} /> 
           <Route exact path="/cerrarsesion" element={<CerrarSesion />} /> 
           <Route exact path="/cursonuevo" element={<CursoNuevo />} /> 
+          <Route exact path="/updatecurso/:curso_id" element={<UpdateCurso />} /> 
 
         </Routes>
       </Router>

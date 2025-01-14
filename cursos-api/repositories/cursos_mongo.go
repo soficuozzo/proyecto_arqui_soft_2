@@ -88,6 +88,7 @@ func NewMongo(config MongoConfig) Mongo {
 
 func (repository Mongo) GetCursoByID(ctx context.Context, id string) (cursosDAO.Curso, error) {
 	objectID, err := primitive.ObjectIDFromHex(id)
+
 	if err != nil {
 		return cursosDAO.Curso{}, fmt.Errorf("error converting id to mongo ID: %w", err)
 	}
@@ -102,6 +103,21 @@ func (repository Mongo) GetCursoByID(ctx context.Context, id string) (cursosDAO.
 	}
 	return curso, nil
 }
+
+func (repository Mongo) GetCursoByName(ctx context.Context, name string) (cursosDAO.Curso, error) {
+
+	result := repository.client.Database(repository.database).Collection(repository.collection).FindOne(ctx, bson.M{"nombre": name})
+	if result.Err() != nil {
+		return cursosDAO.Curso{}, fmt.Errorf("error finding document: %w", result.Err())
+	}
+
+	var curso cursosDAO.Curso
+	if err := result.Decode(&curso); err != nil {
+		return cursosDAO.Curso{}, fmt.Errorf("error decoding result: %w", err)
+	}
+	return curso, nil
+}
+
 func (repository Mongo) GetCursosByIds(ctx context.Context, ids []string) ([]domain.CursoData, error) {
 	// Convertir cada ID en ObjectID
 	objectIDs := make([]primitive.ObjectID, 0, len(ids))

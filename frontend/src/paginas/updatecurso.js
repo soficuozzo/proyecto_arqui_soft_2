@@ -1,11 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import '../componentes/NavegadorHome.css';
 import toast, { Toaster } from 'react-hot-toast';
 import './registrarse.css'
+import { useParams } from 'react-router-dom';
 
 
-const CursoNuevo = () => {
+const UpdateCurso = () => {
+    const { curso_id } = useParams();
+    const [curso, setCurso] = useState(null);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCurso = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8082/cursos/${curso_id}`);
+                console.log('Curso obtenido:', response.data);  // Verifica que los datos se obtienen correctamente
+                setCurso(response.data);
+                console.log('Curso seteado correctamente:', curso);  // Aquí también puedes ver si los valores están seteados
+
+            } catch (error) {
+                setError('Error fetching curso');
+                console.error('Error fetching curso:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCurso();
+    }, [curso_id]);
+
+
     const [nombre, setNombre] = useState("");
     const [descripcion, setDescripcion] = useState("");
     const [categoria, setCategoria] = useState("");
@@ -18,6 +45,22 @@ const CursoNuevo = () => {
     const imagen = "foto";
 
     const navigate = useNavigate();
+
+  // Actualiza los estados cuando el curso es cargado
+  useEffect(() => {
+    if (curso) {
+        setNombre(curso.nombre);
+        setDescripcion(curso.descripcion);
+        setCategoria(curso.categoria);
+        setCapacidad(curso.capacidad);
+        setProfesor(curso.profesor);
+        setDuracion(curso.duracion);
+        setRequisitos(curso.requisitos);
+        setValoracion(curso.valoracion);
+    }
+}, [curso]);
+
+   
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -84,11 +127,10 @@ const CursoNuevo = () => {
                     if(check.ok){
                         toast.error("Ya existe un curso con ese nombre.");
                     }else{
-                        const response = await fetch('http://localhost:8082/cursos/create', {
-                            method: 'POST',
+                        const response = await fetch(`http://localhost:8082/cursos/update/${curso_id}`, {
+                            method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
-    
                             },
                             body: JSON.stringify({ 
                                 nombre, 
@@ -123,6 +165,7 @@ const CursoNuevo = () => {
 
     return (
         <div className="login-form-container">
+
             <form onSubmit={handleSubmit} className="login-form">
 
                 <div className="form-group">
@@ -234,10 +277,10 @@ const CursoNuevo = () => {
 
                 <br/><br/>
 
-                <button type="submit">Crear Curso</button>
+                <button type="submit">Modificar curso</button>
             </form>
             <Toaster /> {/* Componente para mostrar notificaciones toast */}
         </div>
     );
 };
-export default CursoNuevo;
+export default UpdateCurso;

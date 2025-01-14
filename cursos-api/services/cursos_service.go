@@ -29,6 +29,7 @@ type Repository interface {
 	GetAllCursos(ctx context.Context) ([]domain.CursoData, error)
 
 	GetCursosByIds(tx context.Context, id []string) ([]domain.CursoData, error)
+	GetCursoByName(ctx context.Context, name string) (dao.Curso, error)
 }
 
 // Definición de CursoService con repositorios y otros clientes
@@ -168,6 +169,27 @@ func (service CursoService) CalcularDisponibilidad(ctx context.Context, cursosID
 
 func (service CursoService) GetCursoByID(ctx context.Context, id string) (domain.CursoData, error) {
 	cursoDAO, err := service.mainRepository.GetCursoByID(ctx, id)
+	if err != nil {
+		return domain.CursoData{}, fmt.Errorf("error obteniendo curso: %w", err)
+	}
+
+	return domain.CursoData{
+		CursoID:     cursoDAO.CursoID,
+		Nombre:      cursoDAO.Nombre,
+		Descripcion: cursoDAO.Descripcion,
+		Categoria:   cursoDAO.Categoria,
+		Capacidad:   cursoDAO.Capacidad,
+		Requisito:   cursoDAO.Requisito,
+		Duracion:    cursoDAO.Duracion,
+		Imagen:      cursoDAO.Imagen,
+		Valoracion:  cursoDAO.Valoracion,
+		Profesor:    cursoDAO.Profesor,
+	}, nil
+}
+
+func (service CursoService) GetCursoByName(ctx context.Context, name string) (domain.CursoData, error) {
+	cursoDAO, err := service.mainRepository.GetCursoByName(ctx, name)
+
 	if err != nil {
 		return domain.CursoData{}, fmt.Errorf("error obteniendo curso: %w", err)
 	}

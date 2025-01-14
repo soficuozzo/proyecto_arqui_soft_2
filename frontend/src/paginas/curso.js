@@ -4,10 +4,10 @@ import toast, { Toaster } from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
 import './resultados.css';
 import './curso.css';
+import { useNavigate } from "react-router-dom";
 
 const Curso = () => {
     const { curso_id } = useParams();
-    const usuario_id = localStorage.getItem("usuario_id");
     const [curso, setCurso] = useState(null);
     const [loading, setLoading] = useState(true);
     const [estaInscripto, setEstaInscripto] = useState(false);
@@ -15,6 +15,7 @@ const Curso = () => {
     const usuariotipo = localStorage.getItem("tipo");
     const [error, setError] = useState(null);
 
+    const navigate = useNavigate(); // Permite la navegación entre páginas con las rutas
 
     useEffect(() => {
         const fetchCurso = async () => {
@@ -84,7 +85,7 @@ const Curso = () => {
     };
 
 
-    const mostrar = () => {
+    const mostrar1 = () => {
         if (!localStorage.getItem("usuario_id")) { return false; }
         if (usuariotipo === "admin") { return false; }
         if (estaInscripto) { return false; }
@@ -92,6 +93,10 @@ const Curso = () => {
         return true;
     };
 
+    const mostrar2 = () => {
+        if (usuariotipo === "estudiante") { return false; }
+        return true;
+    };
     
 
     if (loading) {
@@ -102,6 +107,12 @@ const Curso = () => {
     if (!curso) {
         return <div>No se encontró el curso seleccionado.</div>;
     }
+
+    const handleUpdate = () => {
+        navigate(`/updatecurso/${curso_id}`); 
+        localStorage.setItem("cursoid", curso.curso_id)
+
+      };
 
    
 
@@ -118,13 +129,22 @@ const Curso = () => {
                     <p><b>Requisitos:</b> {curso.requisito}</p>
                     <p><b>Capacidad:</b> {curso.capacidad}</p> 
                     
-                    {mostrar() && (
+                    {mostrar1() && (
                         <>
                             <button onClick={handleInscripcion} className="inscribirsebutton">Inscribirme</button>
                             <Toaster position="bottom-center" />
                         </>
                     )}
-                    <br/><br/><br/>
+                    <br/><br/>
+
+                    {mostrar2() && (
+                        <>
+                            <button onClick={handleUpdate} className="inscribirsebutton">Modificar</button>
+                            <Toaster position="bottom-center" />
+                        </>
+                    )}
+                    
+                    <br/>
 
                 </div>
                 <br/><br/><br/>

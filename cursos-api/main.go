@@ -67,6 +67,7 @@ func main() {
 	router.Use(cors.New(config))
 
 	router.GET("/cursos/:id", cursoController.GetCursoByID)
+	router.GET("/cursos/nombre/:name", cursoController.GetCursoByName)
 	router.POST("/cursos/create", cursoController.Create)
 	router.PUT("/cursos/update/:id", cursoController.Update)
 	router.DELETE("/cursos/delete/:id", cursoController.Delete)

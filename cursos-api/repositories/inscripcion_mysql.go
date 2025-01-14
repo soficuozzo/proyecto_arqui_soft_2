@@ -25,6 +25,11 @@ type MySQL struct {
 	db *gorm.DB
 }
 
+// GetCursoByName implements services.Repository.
+func (m MySQL) GetCursoByName(ctx context.Context, name string) (dao.Curso, error) {
+	panic("unimplemented")
+}
+
 // GetAllCursos implements services.Repository.
 func (m MySQL) GetAllCursos(ctx context.Context) ([]domain.CursoData, error) {
 	panic("unimplemented")
