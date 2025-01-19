@@ -72,6 +72,8 @@ func generarJWT(email string) (string, error) {
 func gettoken(password string, usuario domain.UsuarioData) (string, error) {
 
 	hash := generateHash(password)
+	log.Println("contraseña hash:", hash)
+	log.Println("hash:", usuario.Passwordhash)
 
 	if hash != usuario.Passwordhash {
 		return "", fmt.Errorf("Contraseña incorrecta.")
@@ -103,6 +105,8 @@ func (service Service) Login(email string, password string) (string, error) {
 
 	if err == nil {
 
+		log.Println("Usuario encontrado en la caché.")
+
 		result := Usuario(usuarioo)
 
 		token, error = gettoken(password, result)
@@ -114,10 +118,13 @@ func (service Service) Login(email string, password string) (string, error) {
 	usuarioo, err = service.memcachedRepository.GetUsuariobyEmail(email)
 
 	if err == nil {
+		log.Println("Usuario encontrado en la memcaché.")
 
 		result := Usuario(usuarioo)
 
 		token, error = gettoken(password, result)
+
+		fmt.Println("Hash generado:", generateHash(password))
 
 		service.cacheRepository.Actualizar(result)
 
