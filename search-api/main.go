@@ -14,14 +14,14 @@ import (
 func main() {
 	// Solr
 	solrRepo := repositories.NewSolr(repositories.SolrConfig{
-		Host:       "localhost", // Solr host
-		Port:       "8983",      // Solr port
-		Collection: "curso",     // Collection name
+		Host:       "solr",  // Solr host
+		Port:       "8983",  // Solr port
+		Collection: "curso", // Collection name
 	})
 
 	// Rabbit
 	eventsQueue := queues.NewRabbit(queues.RabbitConfig{
-		Host:      "localhost",
+		Host:      "rabbitmq",
 		Port:      "5672",
 		Username:  "user",
 		Password:  "password",
@@ -30,7 +30,7 @@ func main() {
 
 	// Cursos API
 	cursosAPI := repositories.NewHTTP(repositories.HTTPConfig{
-		Host: "localhost",
+		Host: "cursos-api",
 		Port: "8082",
 	})
 

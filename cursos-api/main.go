@@ -16,7 +16,7 @@ import (
 func main() {
 	// Configuración del repositorio principal
 	mainRepository := repositories.NewMongo(repositories.MongoConfig{
-		Host:       "localhost",
+		Host:       "mongo",
 		Port:       "27017",
 		Username:   "root",
 		Password:   "root",
@@ -26,7 +26,7 @@ func main() {
 
 	InscripcionRepository := repositories.NewMySQL(
 		repositories.MySQLConfig{
-			Host:     "127.0.0.1",
+			Host:     "mysql",
 			Port:     "3306",
 			Database: "users-api",
 			Username: "root",
@@ -35,7 +35,7 @@ func main() {
 	)
 
 	eventsQueue := clients.NewRabbit(clients.RabbitConfig{
-		Host:      "localhost",
+		Host:      "rabbitmq",
 		Port:      "5672",
 		Username:  "user",
 		Password:  "password",

@@ -16,7 +16,7 @@ func main() {
 	// MySQL
 	mySQLRepo := repositories.NewMySQL(
 		repositories.MySQLConfig{
-			Host:     "127.0.0.1",
+			Host:     "mysql",
 			Port:     "3306",
 			Database: "users-api",
 			Username: "root",

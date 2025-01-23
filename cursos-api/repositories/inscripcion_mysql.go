@@ -98,6 +98,7 @@ func NewMySQL(config MySQLConfig) MySQL {
 
 	// Open connection to MySQL using GORM
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
 	if err != nil {
 		log.Fatalf("failed to connect to MySQL: %s", err.Error())
 	}
