@@ -67,6 +67,7 @@ services:
     networks:
       - app-network
 
+
   # Primera instancia de users-api
   users-api:
     image: users-api:latest
