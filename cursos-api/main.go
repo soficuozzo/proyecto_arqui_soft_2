@@ -59,10 +59,8 @@ func main() {
 	// Configuración de rutas
 	router := gin.Default()
 
-	// Configurar CORS (Permitir todos los orígenes)
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
-
 	config.AllowCredentials = true
 	config.AddAllowHeaders("Authorization")
 	router.Use(cors.New(config))

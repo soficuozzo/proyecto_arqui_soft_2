@@ -80,6 +80,12 @@ services:
     depends_on:
       - mysql
       - memcached
+    environment:
+      - GO111MODULE=on
+      - DB_HOST = mysql
+      - DB_NAME = users-api
+      - DB_USER = root
+      - DB_PASSWORD  =  root1234
     networks:
       - app-network
     restart: on-failure
