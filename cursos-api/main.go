@@ -8,12 +8,18 @@ import (
 	"proyecto_arqui_soft_2/cursos-api/repositories"
 	"proyecto_arqui_soft_2/cursos-api/services"
 
+	"os"
+
 	"github.com/gin-contrib/cors"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+
+	instanceID := os.Getenv("INSTANCE_ID")
+	log.Printf("Starting instance: %s", instanceID)
+
 	// Configuración del repositorio principal
 	mainRepository := repositories.NewMongo(repositories.MongoConfig{
 		Host:       "mongo",

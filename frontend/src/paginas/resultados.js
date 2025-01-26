@@ -13,7 +13,10 @@ function Resultados({ searchTerm }) {
             setError(null);
             fetch(`http://localhost:8083/search?q=${encodeURIComponent(searchTerm)}&limit=10&offset=0`)
                 .then(response => {
+                    
                     if (!response.ok) {
+                        console.log('Response recibido:', response); // Log para inspeccionar el response completo
+
                         throw new Error('Error en la solicitud');
                     }
                     return response.json();
