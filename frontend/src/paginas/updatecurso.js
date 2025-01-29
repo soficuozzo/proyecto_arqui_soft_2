@@ -122,43 +122,39 @@ const UpdateCurso = () => {
 
         if(valid){
                 try{
-                
-                    const check = await fetch(`http://localhost:8082/cursos/nombre/${nombre}`)
-                    if(check.ok){
-                        toast.error("Ya existe un curso con ese nombre.");
-                    }else{
-                        const response = await fetch(`http://localhost:8082/cursos/update/${curso_id}`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ 
-                                nombre, 
-                                descripcion, 
-                                categoria,
-                                capacidad: parseInt(capacidad), 
-                                imagen, 
-                                profesor, 
-                                duracion: parseInt(duracion),
-                                requisitos, 
-                                valoracion: parseInt(valoracion) }),
-    
-                        });
-    
-                        if (response.ok) {
-                    
-                            navigate('/cursos/todos'); // Redirige al usuario a la página principal después del login exitoso
-                            toast.success("Creación exitosa.");
-    
-                        } else {
-                            toast.error(    "Curso Invalido");
-                        }
-                    }
+            
+                    const response = await fetch(`http://localhost:8082/cursos/update/${curso_id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            nombre, 
+                            descripcion, 
+                            categoria,
+                            capacidad: parseInt(capacidad), 
+                            imagen, 
+                            profesor, 
+                            duracion: parseInt(duracion),
+                            requisitos, 
+                            valoracion: parseInt(valoracion) }),
 
-                }catch (error){
-                    console.error('Error al realizar la solicitud al backend:', error);
-                    toast.error("Error al intentar crear el curso ");
-                }
+                    });
+
+                    if (response.ok) {
+                
+                        navigate('/cursos/todos'); // Redirige al usuario a la página principal después del login exitoso
+                        toast.success("Creación exitosa.");
+
+                    } else {
+                        toast.error(    "Curso Invalido");
+                    }
+                
+
+            }catch (error){
+                console.error('Error al realizar la solicitud al backend:', error);
+                toast.error("Error al intentar crear el curso ");
+            }
         }   
     };
 

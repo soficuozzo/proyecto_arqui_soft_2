@@ -60,6 +60,7 @@ func (m MySQL) InscribirCurso(ctx context.Context, inscripcion dao.Inscripcion) 
 
 	if result.Error != nil {
 		log.Error("")
+		return result.Error
 	}
 
 	return nil

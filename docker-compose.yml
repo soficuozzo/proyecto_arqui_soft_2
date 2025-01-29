@@ -78,9 +78,8 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
+      - cursos-api
       - cursos-api1
-      - cursos-api2
-      - cursos-api3
     networks:
       - app-network
 
@@ -107,10 +106,10 @@ services:
       - app-network
     restart: on-failure
 
-  # cursos-api1
-  cursos-api1:
+  # cursos-api
+  cursos-api:
     image: cursos-api:latest
-    container_name: cursos-api-container-1
+    container_name: cursos-api-container
     build:
       context: ./cursos-api
       dockerfile: Dockerfile
@@ -132,11 +131,9 @@ services:
       - ./cursos-api:/app
       - /var/run/docker.sock:/var/run/docker.sock
 
-
-  # cursos-api2
-  cursos-api2:
+  cursos-api1:
     image: cursos-api:latest
-    container_name: cursos-api-container-2
+    container_name: cursos-api-container-1
     build:
       context: ./cursos-api
       dockerfile: Dockerfile
@@ -146,7 +143,7 @@ services:
     environment:
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
-      - INSTANCE_ID=cursos-api-container-2
+      - INSTANCE_ID=cursos-api-container-1
     depends_on:
       - mongo
       - rabbitmq
@@ -158,31 +155,6 @@ services:
       - ./cursos-api:/app
       - /var/run/docker.sock:/var/run/docker.sock
 
-
-  # cursos-api3
-  cursos-api3:
-    image: cursos-api:latest
-    container_name: cursos-api-container-3
-    build:
-      context: ./cursos-api
-      dockerfile: Dockerfile
-    ports:
-      - "8086:8082"
-    command: /bin/sh -c "sleep 10 && until nc -z rabbitmq 5672; do sleep 1; done && go run main.go"
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - INSTANCE_ID=cursos-api-container-3
-    depends_on:
-      - mongo
-      - rabbitmq
-      - mysql
-    networks:
-      - app-network
-    restart: on-failure
-    volumes:
-      - ./cursos-api:/app
-      - /var/run/docker.sock:/var/run/docker.sock
 
   # search-api
   search-api:

@@ -56,9 +56,10 @@ function Resultados({ searchTerm }) {
                             cursos.map(curso => (
                                 <div key={curso.curso_id} className="course-list-item">
                                     <div>
-                                        <Link to={`/curso/${curso.nombre}`} className="curso-link">
-                                            <strong>{curso.nombre}</strong>
-                                        </Link>
+                        
+                                        <Link to={`/curso/${curso.curso_id}`} className="curso-link">
+                                        <strong>{curso.nombre}</strong>
+                                    </Link>
                                         <p>{curso.descripcion}</p>
                                         <p>{curso.categoria}</p>
                                         
