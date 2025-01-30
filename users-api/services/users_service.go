@@ -52,7 +52,7 @@ func Usuario(user dao.Usuario) domain.UsuarioData {
 	return us
 }
 
-func generateHash(password string) string {
+func GenerateHash(password string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(password)))
 }
 
@@ -71,7 +71,7 @@ func generarJWT(email string) (string, error) {
 
 func gettoken(password string, usuario domain.UsuarioData) (string, error) {
 
-	hash := generateHash(password)
+	hash := GenerateHash(password)
 	log.Println("contraseña hash:", hash)
 	log.Println("hash:", usuario.Passwordhash)
 
@@ -124,7 +124,7 @@ func (service Service) Login(email string, password string) (string, error) {
 
 		token, error = gettoken(password, result)
 
-		fmt.Println("Hash generado:", generateHash(password))
+		fmt.Println("Hash generado:", GenerateHash(password))
 
 		service.cacheRepository.Actualizar(result)
 
@@ -209,10 +209,10 @@ func (service Service) CrearUsuario(newusuario domain.UsuarioData) (domain.Usuar
 	user.Apellido = newusuario.Apellido
 	user.Email = newusuario.Email
 
-	hash := generateHash(newusuario.Passwordhash)
-
+	hash := GenerateHash(newusuario.Passwordhash)
 	user.Passwordhash = hash
 	newusuario.Passwordhash = user.Passwordhash
+
 	user.Tipo = newusuario.Tipo
 
 	user, err := service.mainRepository.CrearUsuario(user)

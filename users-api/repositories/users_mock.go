@@ -1,4 +1,4 @@
-package services
+package repositories
 
 import (
 	"proyecto_arqui_soft_2/users-api/dao"

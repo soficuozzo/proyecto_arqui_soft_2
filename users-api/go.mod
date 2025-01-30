@@ -6,12 +6,16 @@ require (
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/stretchr/testify v1.10.0
 	gorm.io/gorm v1.25.7
 )
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/karlseguin/expect v1.0.8 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 )
 
 require (
