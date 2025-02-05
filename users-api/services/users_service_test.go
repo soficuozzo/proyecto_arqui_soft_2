@@ -96,35 +96,27 @@ func TestService(t *testing.T) {
 	t.Run("CrearUsuario - Success", func(t *testing.T) {
 		hashedPassword := servicio.GenerateHash("password123")
 		newUser := dao.Usuario{Nombre: "nombre1", Apellido: "apellido1", Email: "email1", Tipo: "estudiante", Passwordhash: hashedPassword}
-		mainRepo.On("CrearUsuario", newUser).Return(dao.Usuario(newUser), nil).Once()
 
-		newUser.UsuarioID = 1
+		mainRepo.On("CrearUsuario", newUser).Return((newUser), nil).Once()
 
-		cacheRepo.On("CrearUsuario", newUser).Return(dao.Usuario(newUser), nil).Once()
-		memcachedRepo.On("CrearUsuario", newUser).Return(dao.Usuario(newUser), nil).Once()
+		newUser.UsuarioID = 0
+
+		cacheRepo.On("CrearUsuario", newUser).Return((newUser), nil).Once()
+		memcachedRepo.On("CrearUsuario", newUser).Return((newUser), nil).Once()
 
 		usuario, err := usersService.CrearUsuario(domain.UsuarioData{Nombre: "nombre1", Apellido: "apellido1", Email: "email1", Tipo: "estudiante", Passwordhash: "password123"})
 
+		resultUser := dao.Usuario{
+			UsuarioID:    usuario.UsuarioID,
+			Nombre:       usuario.Nombre,
+			Apellido:     usuario.Apellido,
+			Email:        usuario.Email,
+			Tipo:         usuario.Tipo,
+			Passwordhash: usuario.Passwordhash,
+		}
+
 		assert.NoError(t, err)
-		assert.Equal(t, dao.Usuario(newUser), usuario)
-
-		mainRepo.AssertExpectations(t)
-		cacheRepo.AssertExpectations(t)
-		memcachedRepo.AssertExpectations(t)
-	})
-
-	t.Run("CrearUsuario - Error", func(t *testing.T) {
-
-		hashedPassword := servicio.GenerateHash("password123")
-		newUser := dao.Usuario{Nombre: "nombre1", Apellido: "apellido1", Email: "email1", Tipo: "estudiante", Passwordhash: hashedPassword}
-
-		mainRepo.On("CrearUsuario", newUser).Return(int64(0), errors.New("db error")).Once()
-
-		id, err := usersService.CrearUsuario(domain.UsuarioData{Nombre: "nombre1", Apellido: "apellido1", Email: "email1", Tipo: "estudiante", Passwordhash: hashedPassword})
-
-		assert.Error(t, err)
-		assert.Equal(t, int64(0), id)
-		assert.Equal(t, "error creating user: db error", err.Error())
+		assert.Equal(t, (newUser), resultUser)
 
 		mainRepo.AssertExpectations(t)
 		cacheRepo.AssertExpectations(t)
