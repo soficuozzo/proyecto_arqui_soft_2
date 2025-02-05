@@ -20,6 +20,11 @@ type Cache struct {
 	ttl    time.Duration
 }
 
+// GenerarJWT implements services.Repository.
+func (repository Cache) GenerarJWT(email string) (string, error) {
+	panic("unimplemented")
+}
+
 func NewCache(config CacheConfig) Cache {
 	// Initialize ccache with default settings
 	cache := ccache.New(ccache.Configure())

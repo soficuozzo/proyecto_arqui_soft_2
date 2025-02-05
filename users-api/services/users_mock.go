@@ -31,3 +31,8 @@ func (service Mock) Actualizar(usuario domain.UsuarioData) error {
 	//TODO implement me
 	panic("implement me")
 }
+
+func (service Mock) GenerarJWT(email string) (string, error) {
+	//TODO implement me
+	panic("implement me")
+}

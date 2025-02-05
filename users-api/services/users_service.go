@@ -19,6 +19,7 @@ type Repository interface {
 	GetUsuariobyEmail(email string) (dao.Usuario, error)
 	GetUsuariobyID(id int64) (dao.Usuario, error)
 
+	GenerarJWT(email string) (string, error)
 	// actualizar cache y memcache
 	Actualizar(usuario domain.UsuarioData) error
 	CrearUsuario(newusuario dao.Usuario) (dao.Usuario, error)
@@ -58,7 +59,8 @@ func GenerateHash(password string) string {
 
 var jwtSecreto = []byte("llave_secreta")
 
-func generarJWT(email string) (string, error) {
+func (service Service) GenerarJWT(email string) (string, error) {
+
 	claims := jwt.MapClaims{
 		"email": email,
 		"exp":   time.Now().Add(time.Hour * 72).Unix(),
@@ -66,10 +68,16 @@ func generarJWT(email string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString(jwtSecreto)
+	signedToken, err := token.SignedString(jwtSecreto)
+	if err != nil {
+		// Log o manejo del error
+		return "", fmt.Errorf("error generating token: %v", err)
+	}
+
+	return signedToken, nil
 }
 
-func gettoken(password string, usuario domain.UsuarioData) (string, error) {
+func (service Service) Gettoken(password string, usuario domain.UsuarioData) (string, error) {
 
 	hash := GenerateHash(password)
 	log.Println("contraseña hash:", hash)
@@ -79,7 +87,7 @@ func gettoken(password string, usuario domain.UsuarioData) (string, error) {
 		return "", fmt.Errorf("Contraseña incorrecta.")
 	}
 
-	token, err := generarJWT(usuario.Email)
+	token, err := service.GenerarJWT(usuario.Email)
 
 	if err != nil {
 		return "", fmt.Errorf("Error al generar JWT token: %w", err)
@@ -109,7 +117,7 @@ func (service Service) Login(email string, password string) (string, error) {
 
 		result := Usuario(usuarioo)
 
-		token, error = gettoken(password, result)
+		token, error = service.Gettoken(password, result)
 
 		return token, error
 
@@ -122,7 +130,7 @@ func (service Service) Login(email string, password string) (string, error) {
 
 		result := Usuario(usuarioo)
 
-		token, error = gettoken(password, result)
+		token, error = service.Gettoken(password, result)
 
 		fmt.Println("Hash generado:", GenerateHash(password))
 
@@ -138,7 +146,7 @@ func (service Service) Login(email string, password string) (string, error) {
 
 		result := Usuario(usuarioo)
 
-		token, error = gettoken(password, result)
+		token, error = service.Gettoken(password, result)
 
 		// actualizar cache
 		service.cacheRepository.Actualizar(result)
@@ -218,7 +226,7 @@ func (service Service) CrearUsuario(newusuario domain.UsuarioData) (domain.Usuar
 	user, err := service.mainRepository.CrearUsuario(user)
 
 	if err != nil {
-		return newusuario, fmt.Errorf("error caching new user: %w", err)
+		return newusuario, fmt.Errorf("error creating user: %w", err)
 	}
 
 	newusuario.UsuarioID = user.UsuarioID
@@ -274,7 +282,7 @@ func (service Service) GetUsuariobyID(id int64) (domain.UsuarioData, error) {
 		return usuarioencontrado, nil
 
 	} else {
-		return domain.UsuarioData{}, fmt.Errorf("error getting user by username: %w", err)
+		return domain.UsuarioData{}, fmt.Errorf("error getting user by ID: %w", err)
 	}
 
 }

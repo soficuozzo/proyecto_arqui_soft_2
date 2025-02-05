@@ -23,6 +23,11 @@ type MySQL struct {
 	db *gorm.DB
 }
 
+// GenerarJWT implements services.Repository.
+func (repository MySQL) GenerarJWT(email string) (string, error) {
+	panic("unimplemented")
+}
+
 // Actualizar implements services.Repository.
 func (repository MySQL) Actualizar(usuario domain.UsuarioData) error {
 	panic("unimplemented")

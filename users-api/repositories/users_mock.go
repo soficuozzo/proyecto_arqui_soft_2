@@ -44,10 +44,16 @@ func (m *Mock) CrearUsuario(usuario dao.Usuario) (dao.Usuario, error) {
 }
 
 func (m *Mock) Actualizar(usuario domain.UsuarioData) error {
+
 	args := m.Called(usuario)
 	if err := args.Error(1); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (m *Mock) GenerarJWT(email string) (string, error) {
+	args := m.Called(email)
+	return args.String(0), args.Error(1)
 }

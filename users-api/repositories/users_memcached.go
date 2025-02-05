@@ -21,6 +21,11 @@ type Memcached struct {
 	client *memcache.Client
 }
 
+// GenerarJWT implements services.Repository.
+func (repository Memcached) GenerarJWT(email string) (string, error) {
+	panic("unimplemented")
+}
+
 func NewMemcached(config MemcachedConfig) Memcached {
 	// Connect to Memcached
 	address := fmt.Sprintf("%s:%s", config.Host, config.Port)
