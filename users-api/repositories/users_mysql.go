@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"proyecto_arqui_soft_2/users-api/dao"
-	"proyecto_arqui_soft_2/users-api/domain"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -29,8 +28,11 @@ func (repository MySQL) GenerarJWT(email string) (string, error) {
 }
 
 // Actualizar implements services.Repository.
-func (repository MySQL) Actualizar(usuario domain.UsuarioData) error {
-	panic("unimplemented")
+func (repository MySQL) Actualizar(usuario dao.Usuario) error {
+	if err := repository.db.Save(&usuario).Error; err != nil {
+		return fmt.Errorf("error actualizando usuario: %w", err)
+	}
+	return nil
 }
 
 var (

@@ -27,7 +27,7 @@ func (service Mock) CrearUsuario(usuario dao.Usuario) (domain.UsuarioData, error
 
 }
 
-func (service Mock) Actualizar(usuario domain.UsuarioData) error {
+func (service Mock) Actualizar(usuario dao.Usuario) error {
 	//TODO implement me
 	panic("implement me")
 }

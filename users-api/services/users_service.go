@@ -21,7 +21,7 @@ type Repository interface {
 
 	GenerarJWT(email string) (string, error)
 	// actualizar cache y memcache
-	Actualizar(usuario domain.UsuarioData) error
+	Actualizar(usuario dao.Usuario) error
 	CrearUsuario(newusuario dao.Usuario) (dao.Usuario, error)
 }
 
@@ -134,7 +134,7 @@ func (service Service) Login(email string, password string) (string, error) {
 
 		fmt.Println("Hash generado:", GenerateHash(password))
 
-		service.cacheRepository.Actualizar(result)
+		service.cacheRepository.Actualizar(usuarioo)
 
 		return token, error
 
@@ -149,10 +149,10 @@ func (service Service) Login(email string, password string) (string, error) {
 		token, error = service.Gettoken(password, result)
 
 		// actualizar cache
-		service.cacheRepository.Actualizar(result)
+		service.cacheRepository.Actualizar(usuarioo)
 
 		// actualizar memcache
-		service.memcachedRepository.Actualizar(result)
+		service.memcachedRepository.Actualizar(usuarioo)
 
 		return token, error
 
@@ -182,7 +182,7 @@ func (service Service) GetUsuariobyEmail(email string) (domain.UsuarioData, erro
 
 		result := Usuario(usuarioo)
 
-		service.cacheRepository.Actualizar(result)
+		service.cacheRepository.Actualizar(usuarioo)
 
 		return result, nil
 
@@ -192,13 +192,11 @@ func (service Service) GetUsuariobyEmail(email string) (domain.UsuarioData, erro
 
 	if err == nil {
 
-		result := Usuario(usuarioo)
-
 		// actualizar cache
-		service.cacheRepository.Actualizar(result)
+		service.cacheRepository.Actualizar(usuarioo)
 
 		// actualizar memcache
-		service.memcachedRepository.Actualizar(result)
+		service.memcachedRepository.Actualizar(usuarioo)
 
 		usuarioencontrado := Usuario(usuarioo)
 
@@ -206,7 +204,6 @@ func (service Service) GetUsuariobyEmail(email string) (domain.UsuarioData, erro
 	} else {
 		return domain.UsuarioData{}, fmt.Errorf("error getting user by username: %w", err)
 	}
-
 }
 
 func (service Service) CrearUsuario(newusuario domain.UsuarioData) (domain.UsuarioData, error) {
@@ -258,7 +255,7 @@ func (service Service) GetUsuariobyID(id int64) (domain.UsuarioData, error) {
 
 		result := Usuario(usuarioo)
 
-		service.cacheRepository.Actualizar(result)
+		service.cacheRepository.Actualizar(usuarioo)
 
 		return result, nil
 
@@ -269,13 +266,11 @@ func (service Service) GetUsuariobyID(id int64) (domain.UsuarioData, error) {
 	if err == nil {
 		log.Println("Datos obtenidos desde base de datos")
 
-		result := Usuario(usuarioo)
-
 		// actualizar cache
-		service.cacheRepository.Actualizar(result)
+		service.cacheRepository.Actualizar(usuarioo)
 
 		// actualizar memcache
-		service.memcachedRepository.Actualizar(result)
+		service.memcachedRepository.Actualizar(usuarioo)
 
 		usuarioencontrado := Usuario(usuarioo)
 
@@ -285,4 +280,71 @@ func (service Service) GetUsuariobyID(id int64) (domain.UsuarioData, error) {
 		return domain.UsuarioData{}, fmt.Errorf("error getting user by ID: %w", err)
 	}
 
+}
+
+func (service Service) Actualizar(usuario domain.UsuarioData) error {
+
+	var apellidoA, nombreA, passwordA string
+
+	if usuario.Apellido != "" {
+		apellidoA = usuario.Apellido
+	} else {
+		usuarioo, err := service.mainRepository.GetUsuariobyID(usuario.UsuarioID)
+		if err != nil {
+			return fmt.Errorf("error para devolver usuario: %w", err)
+		}
+		apellidoA = usuarioo.Apellido
+
+	}
+
+	if usuario.Nombre != "" {
+		nombreA = usuario.Nombre
+	} else {
+		usuarioo, err := service.mainRepository.GetUsuariobyID(usuario.UsuarioID)
+		if err != nil {
+			return fmt.Errorf("error para devolver usuario: %w", err)
+		}
+		nombreA = usuarioo.Nombre
+
+	}
+
+	if usuario.Passwordhash != "" {
+		passwordA = GenerateHash(usuario.Passwordhash)
+	} else {
+		usuarioo, err := service.mainRepository.GetUsuariobyID(usuario.UsuarioID)
+		if err != nil {
+			return fmt.Errorf("error para devolver usuario: %w", err)
+		}
+		passwordA = usuarioo.Passwordhash
+
+	}
+
+	usuarioActualizado := dao.Usuario{
+		UsuarioID:    usuario.UsuarioID,
+		Nombre:       nombreA,
+		Apellido:     apellidoA,
+		Email:        usuario.Email,
+		Tipo:         usuario.Tipo,
+		Passwordhash: passwordA,
+	}
+
+	err := service.mainRepository.Actualizar(usuarioActualizado)
+
+	if err != nil {
+		return fmt.Errorf("error actualizando usuario: %w", err)
+	}
+
+	err = service.cacheRepository.Actualizar(usuarioActualizado)
+
+	if err != nil {
+		return fmt.Errorf("error updating user: %w", err)
+	}
+
+	err = service.memcachedRepository.Actualizar(usuarioActualizado)
+
+	if err != nil {
+		return fmt.Errorf("error updating user: %w", err)
+	}
+
+	return nil
 }

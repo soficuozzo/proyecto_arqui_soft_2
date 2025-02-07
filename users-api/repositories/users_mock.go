@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"proyecto_arqui_soft_2/users-api/dao"
-	"proyecto_arqui_soft_2/users-api/domain"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -43,14 +42,10 @@ func (m *Mock) CrearUsuario(usuario dao.Usuario) (dao.Usuario, error) {
 
 }
 
-func (m *Mock) Actualizar(usuario domain.UsuarioData) error {
+func (m *Mock) Actualizar(usuario dao.Usuario) error {
 
 	args := m.Called(usuario)
-	if err := args.Error(1); err != nil {
-		return err
-	}
-
-	return nil
+	return args.Error(0) // No change needed here as it returns an error directly
 }
 
 func (m *Mock) GenerarJWT(email string) (string, error) {

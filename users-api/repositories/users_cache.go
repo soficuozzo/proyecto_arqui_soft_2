@@ -91,7 +91,7 @@ func (repository Cache) GetUsuariobyID(id int64) (dao.Usuario, error) {
 	return dao.Usuario{}, fmt.Errorf("Usuario no encontrado en la cache con email %d", id)
 }
 
-func (repository Cache) Actualizar(usuario domain.UsuarioData) error {
+func (repository Cache) Actualizar(usuario dao.Usuario) error {
 
 	idKey := fmt.Sprintf("user:id:%d", usuario.UsuarioID)
 	eKey := fmt.Sprintf("user:email:%s", usuario.Email)

@@ -102,7 +102,7 @@ func (repository Memcached) GetUsuariobyID(id int64) (dao.Usuario, error) {
 
 }
 
-func (repository Memcached) Actualizar(usuario domain.UsuarioData) error {
+func (repository Memcached) Actualizar(usuario dao.Usuario) error {
 
 	// Serialize user data
 	data, err := json.Marshal(usuario)

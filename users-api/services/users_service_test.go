@@ -41,16 +41,15 @@ func TestService(t *testing.T) {
 		memcachedRepo.AssertExpectations(t)
 	})
 
-	// crear actualizar
+	// funciona
 	t.Run("GetUsuariobyID - Not Found in Cache, Found in Memcached", func(t *testing.T) {
 		hashedPassword := servicio.GenerateHash("password123")
 		mockUser := dao.Usuario{UsuarioID: 1, Nombre: "nombre1", Apellido: "apellido1", Email: "email1", Tipo: "estudiante", Passwordhash: hashedPassword}
 
 		cacheRepo.On("GetUsuariobyID", int64(1)).Return(dao.Usuario{}, errors.New("not found")).Once()
-
 		memcachedRepo.On("GetUsuariobyID", int64(1)).Return(mockUser, nil).Once()
 
-		cacheRepo.On("CrearUsuario", mockUser).Return(mockUser, nil).Once()
+		cacheRepo.On("Actualizar", mockUser).Return(nil).Once()
 
 		result, err := usersService.GetUsuariobyID(1)
 
@@ -62,7 +61,7 @@ func TestService(t *testing.T) {
 		memcachedRepo.AssertExpectations(t)
 	})
 
-	// crear actualizar
+	// funciona
 	t.Run("GetUsuariobyID - Not Found in Cache or Memcached, Found in Main Repo", func(t *testing.T) {
 		hashedPassword := servicio.GenerateHash("password123")
 		mockUser := dao.Usuario{UsuarioID: 1, Nombre: "nombre1", Apellido: "apellido1", Email: "email1", Tipo: "estudiante", Passwordhash: hashedPassword}
@@ -70,13 +69,14 @@ func TestService(t *testing.T) {
 		cacheRepo.On("GetUsuariobyID", int64(1)).Return(dao.Usuario{}, errors.New("not found")).Once()
 		memcachedRepo.On("GetUsuariobyID", int64(1)).Return(dao.Usuario{}, errors.New("not found")).Once()
 		mainRepo.On("GetUsuariobyID", int64(1)).Return(mockUser, nil).Once()
-		cacheRepo.On("CrearUsuario", mockUser).Return(int64(1), nil).Once()
-		memcachedRepo.On("CrearUsuario", mockUser).Return(int64(1), nil).Once()
+
+		cacheRepo.On("Actualizar", mockUser).Return(nil).Once()
+		memcachedRepo.On("Actualizar", mockUser).Return(nil).Once()
 
 		result, err := usersService.GetUsuariobyID(1)
 
 		assert.NoError(t, err)
-		assert.Equal(t, "email", result.Email)
+		assert.Equal(t, "email1", result.Email)
 
 		mainRepo.AssertExpectations(t)
 		cacheRepo.AssertExpectations(t)
