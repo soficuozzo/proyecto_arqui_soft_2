@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 
 const Curso = () => {
     const { curso_id } = useParams();
+    console.log("Curso ID recibido:", curso_id);
+
     const [curso, setCurso] = useState(null);
     const [loading, setLoading] = useState(true);
     const [estaInscripto, setEstaInscripto] = useState(false);
@@ -45,7 +47,7 @@ const Curso = () => {
             try {
                 const response = await axios.get(`http://localhost:8082/usuario/miscursos/${usuarioId}`);
                 const cursosInscritos = response.data.cursos;
-                const estaInscritoEnCurso = cursosInscritos.some(cursoInscrito => cursoInscrito.curso_id === curso_id);
+                const estaInscritoEnCurso = cursosInscritos.some(cursoInscrito => cursoInscrito.id === curso_id);
                 setEstaInscripto(estaInscritoEnCurso);
 
             } catch (error) {
@@ -110,7 +112,7 @@ const Curso = () => {
 
     const handleUpdate = () => {
         navigate(`/updatecurso/${curso_id}`); 
-        localStorage.setItem("cursoid", curso.curso_id)
+        localStorage.setItem("cursoid", curso.id)
 
       };
 

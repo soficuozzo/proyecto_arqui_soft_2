@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <schema name="curso" version="1.6">
     <fields>
-        <field name="_id" type="string" indexed="true" stored="true" required="true"/>
+        <field name="id" type="string" indexed="true" stored="true" required="true"/>
         <field name="nombre" type="text_general" indexed="true" stored="true"/>
         <field name="descripcion" type="text_general" indexed="true" stored="true"/>
         <field name="categoria" type="text_general" indexed="true" stored="true"/>
@@ -13,7 +13,7 @@
         <field name="duracion" type="int" indexed="true" stored="true"/>
     </fields>
 
-    <uniqueKey>_id</uniqueKey>
+    <uniqueKey>id</uniqueKey>
 
     <defaultSearchField>nombre</defaultSearchField>
     <similarity class="solr.ClassicSimilarity"/>

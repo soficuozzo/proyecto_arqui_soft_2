@@ -52,27 +52,25 @@ function Resultados({ searchTerm }) {
                     <p>{error}</p>
                 ) : (
                     <div className="course-list">
-                        {cursos.length > 0 ? (
-                            cursos.map(curso => (
-                                <div key={curso.curso_id} className="course-list-item">
-                                    <div>
-                        
-                                        <Link to={`/curso/${curso.curso_id}`} className="curso-link">
+                    {cursos.length > 0 ? (
+                        cursos.map(curso => (
+                            <div key={curso.id} className="course-list-item">
+                                <div>
+                                    <Link to={`/curso/${curso.id}`} className="curso-link">
                                         <strong>{curso.nombre}</strong>
                                     </Link>
-                                        <p>{curso.descripcion}</p>
-                                        <p>{curso.categoria}</p>
-                                        
-                                        <br/>
-                                        Para saber más, haga click al nombre del curso.
-                                    </div>
-                                    <hr />
+                                    <p>{curso.descripcion}</p>
+                                    <p>{curso.categoria}</p>
+                                    <br/>
+                                    Para saber más, haga click al nombre del curso.
                                 </div>
-                            ))
-                        ) : (
-                            <p>No se encontraron cursos.</p>
-                        )}
-                    </div>
+                                <hr />
+                            </div>
+                        ))
+                    ) : (
+                        <p>No se encontraron cursos.</p>
+                    )}
+                </div>
                 )}
             </div>
         </div>

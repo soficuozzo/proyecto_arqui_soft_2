@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './miscursos.css';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 function MisCursos({ searchTerm }) {
   const [cursos, setCursos] = useState([]);
@@ -56,10 +57,12 @@ function MisCursos({ searchTerm }) {
           <div className="course-list">
             {cursos.length > 0 ? (
               cursos.map(curso => (
-                <div key={curso.curso_id} className="course-list-item">
+                <div key={curso.id} className="course-list-item">
                   <div>
                     <br/>
-                    <h3>{curso.nombre}</h3>
+                      <Link to={`/curso/${curso.id}`} className="curso-link">
+                                        <strong>{curso.nombre}</strong>
+                                    </Link>
                     <p>{curso.descripcion}</p>
                     <p><b>Categoria:</b> {curso.categoria}</p>
                     <br/>

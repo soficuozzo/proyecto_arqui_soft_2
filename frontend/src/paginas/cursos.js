@@ -22,7 +22,7 @@ const Cursos = () => {
             
             try {
                 const response = await axios.get('http://localhost:8082/cursos/todos');
-                console.log('Respuesta de la API:', response); // Agrega un log aquí
+                console.log('Respuesta de la API:', response); 
                 setCursos(response.data);
 
 
@@ -58,9 +58,9 @@ const Cursos = () => {
                 <div className="course-list">
                     {cursos.length > 0 ? (
                         cursos.map(curso => (
-                            <div key={curso.curso_id} className="course-list-item">
+                            <div key={curso.id} className="course-list-item">
                                 <div>
-                                    <Link to={`/curso/${curso.curso_id}`} className="curso-link">
+                                    <Link to={`/curso/${curso.id}`} className="curso-link">
                                         <strong>{curso.nombre}</strong>
                                     </Link>
                                     <p>{curso.descripcion}</p>

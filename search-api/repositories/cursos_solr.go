@@ -5,8 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/stevenferrer/solr-go"
 	cursosDAO "proyecto_arqui_soft_2/search-api/dao"
+
+	"github.com/stevenferrer/solr-go"
 )
 
 type SolrConfig struct {
@@ -36,21 +37,21 @@ func NewSolr(config SolrConfig) Solr {
 func (searchEngine Solr) Index(ctx context.Context, curso cursosDAO.Curso) (string, error) {
 	// Prepare the document for Solr
 	doc := map[string]interface{}{
-		"_id": 	  curso.CursoID,
-		"nombre": curso.Nombre,
+		"id":          curso.CursoID,
+		"nombre":      curso.Nombre,
 		"descripcion": curso.Descripcion,
-		"categoria": curso.Categoria,
-		"capacidad": curso.Capacidad,
-		"imagen": curso.Imagen,
-		"valoracion": curso.Valoracion,
-		"requisito": curso.Requisito,
-		"profesor": curso.Profesor,
-		"duracion": curso.Duracion,
+		"categoria":   curso.Categoria,
+		"capacidad":   curso.Capacidad,
+		"imagen":      curso.Imagen,
+		"valoracion":  curso.Valoracion,
+		"requisito":   curso.Requisito,
+		"profesor":    curso.Profesor,
+		"duracion":    curso.Duracion,
 	}
 
 	// Prepare the index request
 	indexRequest := map[string]interface{}{
-		"add": []interface{}{doc}, 
+		"add": []interface{}{doc},
 	}
 
 	// Index the document in Solr
@@ -80,16 +81,16 @@ func (searchEngine Solr) Index(ctx context.Context, curso cursosDAO.Curso) (stri
 func (searchEngine Solr) Update(ctx context.Context, curso cursosDAO.Curso) error {
 	// Prepare the document for Solr
 	doc := map[string]interface{}{
-		"_id": 	  curso.CursoID,
-		"nombre": curso.Nombre,
+		"id":          curso.CursoID,
+		"nombre":      curso.Nombre,
 		"descripcion": curso.Descripcion,
-		"categoria": curso.Categoria,
-		"capacidad": curso.Capacidad,
-		"imagen": curso.Imagen,
-		"valoracion": curso.Valoracion,
-		"requisito": curso.Requisito,
-		"profesor": curso.Profesor,
-		"duracion": curso.Duracion,
+		"categoria":   curso.Categoria,
+		"capacidad":   curso.Capacidad,
+		"imagen":      curso.Imagen,
+		"valoracion":  curso.Valoracion,
+		"requisito":   curso.Requisito,
+		"profesor":    curso.Profesor,
+		"duracion":    curso.Duracion,
 	}
 
 	// Prepare the update request
@@ -155,7 +156,6 @@ func (searchEngine Solr) Search(ctx context.Context, query string, limit int, of
 	// Prepare the Solr query with limit and offset
 	solrQuery := fmt.Sprintf("q=(nombre:%s OR categoria:%s)&rows=%d&start=%d", query, query, limit, offset)
 
-
 	// Execute the search request
 	resp, err := searchEngine.Client.Query(ctx, searchEngine.Collection, solr.NewQuery(solrQuery))
 	if err != nil {
@@ -168,28 +168,25 @@ func (searchEngine Solr) Search(ctx context.Context, query string, limit int, of
 	// Parse the response and extract curso documents
 	var cursosList []cursosDAO.Curso
 	for _, doc := range resp.Response.Documents {
-	
 
 		// Safely extract curso fields with type assertions
 		cursos := cursosDAO.Curso{
-			CursoID:        getStringField(doc, "_id"),
+			CursoID:     getStringField(doc, "id"),
 			Nombre:      getStringField(doc, "nombre"),
-			Descripcion:   getStringField(doc, "descripcion"),
-			Categoria:      getStringField(doc, "categoria"),
-			Capacidad:     getIntField(doc, "capacidad"),
+			Descripcion: getStringField(doc, "descripcion"),
+			Categoria:   getStringField(doc, "categoria"),
+			Capacidad:   getIntField(doc, "capacidad"),
 			Imagen:      getStringField(doc, "imagen"),
 			Valoracion:  getIntField(doc, "valoracion"),
 			Requisito:   getStringField(doc, "requisito"),
-			Profesor:   getStringField(doc, "profesor"),
-			Duracion:  	getIntField(doc, "duracion"),
+			Profesor:    getStringField(doc, "profesor"),
+			Duracion:    getIntField(doc, "duracion"),
 		}
 		cursosList = append(cursosList, cursos)
 	}
 
 	return cursosList, nil
 }
-
-
 
 // Helper function to safely get string fields from the document
 func getStringField(doc map[string]interface{}, field string) string {
@@ -203,7 +200,6 @@ func getStringField(doc map[string]interface{}, field string) string {
 	}
 	return ""
 }
-
 
 // Helper function to safely get int64 fields from the document
 func getIntField(doc map[string]interface{}, field string) int64 {
