@@ -101,7 +101,7 @@ const Curso = () => {
     };
     
 
-    if (loading) {
+    if (loading) {  
         return <div>Cargando curso...</div>;
     }
 

@@ -42,8 +42,11 @@ const NavegadorHome = ({ onSearch }) => {
 
       {usuariotipo === "admin" &&(
         <>
-        <li><Link to="/cursonuevo">Agregar Curso</Link></li>     
+        
+        <li><Link to="/cursonuevo">Agregar Curso</Link></li>   
+        <li><Link to="/servicios">Servicios</Link></li>
         <li><Link to="/cerrarsesion">Cerrar Sesión</Link></li>
+
         </>
       )}
 
